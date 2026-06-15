@@ -2,45 +2,34 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>量化交易看板</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; padding: 15px; max-width: 100vw; overflow-x: hidden; }
-        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; }
-        .header h1 { font-size: 1.5em; margin-bottom: 5px; }
-        .header p { opacity: 0.8; font-size: 0.85em; }
-        .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
-        .metric-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .metric-card h3 { font-size: 0.85em; color: #666; margin-bottom: 8px; }
-        .metric-card .value { font-size: 1.6em; font-weight: bold; }
+        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .header { background: #667eea; color: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .metric-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-card h3 { margin: 0 0 10px 0; color: #666; }
+        .metric-card .value { font-size: 2em; font-weight: bold; }
         .positive { color: #52c41a; }
         .negative { color: #f5222d; }
-        .section { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .section h2 { font-size: 1.1em; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #667eea; color: white; font-size: 0.9em; }
-        .refresh-btn { position: fixed; bottom: 20px; right: 20px; background: #667eea; color: white; border: none; padding: 12px 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); font-size: 0.9em; }
-        #equity-chart { height: 280px; }
-        @media (max-width: 480px) {
-            .metrics { grid-template-columns: repeat(2, 1fr); }
-            .header h1 { font-size: 1.3em; }
-            .metric-card .value { font-size: 1.4em; }
-        }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>📊 量化交易看板</h1>
-        <p>最后更新: 2026-06-14 18:01:59</p>
+        <p>最后更新: 2026-06-15 22:48:04</p>
     </div>
     
     <div class="metrics">
         <div class="metric-card">
             <h3>今日盈亏</h3>
-            <div class="value positive">+0.00</div>
+            <div class="value positive>+0.00</div>
             <div>+0.00%</div>
         </div>
         <div class="metric-card">
@@ -49,54 +38,12 @@
         </div>
         <div class="metric-card">
             <h3>累计盈亏</h3>
-            <div class="value positive">+0.00</div>
-        </div>
-        <div class="metric-card">
-            <h3>状态</h3>
-            <div class="value" style="color: #52c41a; font-size: 1.2em;">● 正常</div>
+            <div class="value positive>+0.00</div>
         </div>
     </div>
     
-    <div class="section">
-        <h2>📈 收益曲线</h2>
-        <div id="equity-chart"></div>
-    </div>
+    <h2>📈 收益曲线</h2>
+    <div id="equity-curve" style="background: white; padding: 20px; border-radius: 10px; height: 400px; margin-bottom: 20px;"></div>
     
-    <div class="section">
-        <h2>📋 当前持仓</h2>
-<p>暂无持仓。</p></div>
-    
-    <div class="section">
-        <h2>🎯 本周信号 (Top-20)</h2>
-<table><tr><th>排名</th><th>股票</th><th>因子值</th></tr><tr><td>1</td><td>300394.SZ</td><td>+0.1845</td></tr><tr><td>2</td><td>300502.SZ</td><td>+0.1622</td></tr><tr><td>3</td><td>000001.SZ</td><td>+0.0276</td></tr><tr><td>4</td><td>601166.SH</td><td>+0.0176</td></tr><tr><td>5</td><td>000063.SZ</td><td>+0.0169</td></tr><tr><td>6</td><td>301236.SZ</td><td>+0.0162</td></tr><tr><td>7</td><td>600482.SH</td><td>+0.0141</td></tr><tr><td>8</td><td>688041.SH</td><td>+0.0131</td></tr><tr><td>9</td><td>300433.SZ</td><td>+0.0123</td></tr><tr><td>10</td><td>000725.SZ</td><td>+0.0122</td></tr><tr><td>11</td><td>688303.SH</td><td>+0.0118</td></tr><tr><td>12</td><td>688126.SH</td><td>+0.0112</td></tr><tr><td>13</td><td>000100.SZ</td><td>+0.0111</td></tr><tr><td>14</td><td>300124.SZ</td><td>+0.0109</td></tr><tr><td>15</td><td>688396.SH</td><td>+0.0102</td></tr><tr><td>16</td><td>002648.SZ</td><td>+0.0102</td></tr><tr><td>17</td><td>300628.SZ</td><td>+0.0091</td></tr><tr><td>18</td><td>601808.SH</td><td>+0.0088</td></tr><tr><td>19</td><td>600893.SH</td><td>+0.0088</td></tr><tr><td>20</td><td>601456.SH</td><td>+0.0085</td></tr></table></div>
-    
-    <button class="refresh-btn" onclick="location.reload()">🔄 刷新</button>
-    
-    <script>
-        var equityData = [];
-        
-        if (equityData.length > 0) {
-            var trace = {
-                x: equityData.map(d => d.date),
-                y: equityData.map(d => d.cum_pnl),
-                type: 'scatter',
-                mode: 'lines',
-                name: '累计盈亏',
-                line: { color: '#667eea', width: 3 }
-            };
-            
-            var layout = {
-                margin: { t: 30, r: 20, l: 50, b: 40 },
-                xaxis: { title: '日期', tickfont: { size: 10 } },
-                yaxis: { title: '盈亏', tickfont: { size: 10 } },
-                hovermode: 'x unified',
-                font: { size: 12 }
-            };
-            
-            Plotly.newPlot('equity-chart', [trace], layout, {responsive: true});
-        } else {
-            document.getElementById('equity-chart').innerHTML = '<p>暂无收益数据。</p>';
-        }
-    </script>
-</body>
-</html>
+    <h2>📋 当前持仓</h2>
+<p>暂无持仓。</p><h2>🎯 本周信号 (Top-20)</h2><table><tr><th>排名</th><th>股票</th><th>股票名称</th><th>因子值</th></tr><tr><td>1</td><td>300433.SZ</td><td>蓝思科技</td><td>+0.0740</td></tr><tr><td>2</td><td>688126.SH</td><td>沪硅产业</td><td>+0.0575</td></tr><tr><td>3</td><td>688396.SH</td><td>华润微</td><td>+0.0452</td></tr><tr><td>4</td><td>600584.SH</td><td>长电科技</td><td>+0.0388</td></tr><tr><td>5</td><td>300394.SZ</td><td>天孚通信</td><td>+0.0384</td></tr><tr><td>6</td><td>300316.SZ</td><td>晶盛机电</td><td>+0.0374</td></tr><tr><td>7</td><td>688008.SH</td><td>澜起科技</td><td>+0.0374</td></tr><tr><td>8</td><td>688303.SH</td><td>大全能源</td><td>+0.0366</td></tr><tr><td>9</td><td>688041.SH</td><td>海光信息</td><td>+0.0362</td></tr><tr><td>10</td><td>002938.SZ</td><td>鹏鼎控股</td><td>+0.0362</td></tr><tr><td>11</td><td>002463.SZ</td><td>沪电股份</td><td>+0.0353</td></tr><tr><td>12</td><td>688981.SH</td><td>中芯国际</td><td>+0.0348</td></tr><tr><td>13</td><td>601100.SH</td><td>恒立液压</td><td>+0.0339</td></tr><tr><td>14</td><td>603296.SH</td><td>华勤技术</td><td>+0.0331</td></tr><tr><td>15</td><td>300476.SZ</td><td>胜宏科技</td><td>+0.0326</td></tr><tr><td>16</td><td>688012.SH</td><td>中微公司</td><td>+0.0312</td></tr><tr><td>17</td><td>002050.SZ</td><td>三花智控</td><td>+0.0309</td></tr><tr><td>18</td><td>600482.SH</td><td>中国动力</td><td>+0.0306</td></tr><tr><td>19</td><td>000725.SZ</td><td>京东方A</td><td>+0.0303</td></tr><tr><td>20</td><td>600460.SH</td><td>士兰微</td><td>+0.0299</td></tr></table><script>document.getElementById('equity-curve').innerHTML = '<p>暂无收益数据。</p>';</script></body></html>
