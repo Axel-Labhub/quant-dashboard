@@ -5,196 +5,256 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quant Terminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* ── Design tokens (Linear + Vercel + Stripe) ── */
 :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text2: #8b949e;
-    --text3: #484f58;
-    --accent: #58a6ff;
-    --up: #3fb950;
-    --up-dim: rgba(63,185,80,.12);
+    --canvas: #010102;
+    --s1: #0f1011;
+    --s2: #141516;
+    --s3: #18191a;
+    --hairline: #23252a;
+    --hl2: #34343a;
+    --ink: #f7f8f8;
+    --ink2: #d0d6e0;
+    --ink3: #8a8f98;
+    --ink4: #62666d;
+    --accent: #5e6ad2;
+    --up: #27a644;
+    --up-bg: rgba(39,166,68,.1);
     --dn: #f85149;
-    --dn-dim: rgba(248,81,73,.12);
-    --gold: #d29922;
-    --mono: 'JetBrains Mono', ui-monospace, monospace;
-    --sans: 'Inter', system-ui, sans-serif;
+    --dn-bg: rgba(248,81,73,.1);
+    --mono: 'Geist Mono', ui-monospace, monospace;
+    --sans: 'Geist', system-ui, -apple-system, sans-serif;
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 12px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--canvas);
+    color: var(--ink);
     font-family: var(--sans);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 a { color: var(--accent); text-decoration: none; }
 
+/* ── Header (Vercel-inspired dense nav) ── */
 header {
     height: 52px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--hairline);
     display: flex; align-items: center;
-    padding: 0 24px; gap: 20px;
+    padding: 0 20px; gap: 16px;
     position: sticky; top: 0;
-    background: var(--bg); z-index: 100;
+    background: var(--canvas); z-index: 100;
 }
-.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-icon {
+.logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; flex-shrink: 0;
+}
+.logo-mark {
     width: 26px; height: 26px;
-    background: var(--accent); border-radius: 5px;
+    background: var(--accent);
+    border-radius: var(--r-sm);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 13px; color: var(--bg); font-family: var(--mono);
+    font-weight: 700; font-size: 13px;
+    color: #fff; font-family: var(--mono);
 }
-.brand-name { font-weight: 600; font-size: 14px; letter-spacing: -.2px; }
-.brand-tag {
-    font-size: 11px; color: var(--text3);
-    background: var(--surface); padding: 2px 7px;
-    border-radius: 4px; border: 1px solid var(--border);
+.logo-text {
+    font-weight: 600; font-size: 14px;
+    letter-spacing: -0.3px;
+    color: var(--ink);
+}
+.logo-sub {
+    font-size: 11px; color: var(--ink4);
+    font-family: var(--mono);
+    padding: 2px 6px;
+    background: var(--s1);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+}
+.header-sep {
+    width: 1px; height: 18px;
+    background: var(--hairline); flex-shrink: 0;
 }
 .header-right {
     margin-left: auto;
-    display: flex; align-items: center; gap: 16px;
-    font-size: 12px; color: var(--text2); font-family: var(--mono);
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--ink3);
+    font-family: var(--mono);
 }
-.header-right strong { color: var(--text); font-weight: 500; }
-.badge {
+.hr-strong { color: var(--ink); font-weight: 500; }
+.tag {
     font-size: 11px; font-weight: 600;
-    background: var(--accent); color: var(--bg);
-    padding: 2px 8px; border-radius: 4px; letter-spacing: .3px;
+    background: var(--accent); color: #fff;
+    padding: 2px 7px; border-radius: 4px;
+    font-family: var(--mono);
 }
 
-.wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px; }
+/* ── Main ── */
+main { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-.status {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 16px; flex-wrap: wrap;
+/* ── Status strip (Linear-inspired minimal strip) ── */
+.status-strip {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 14px; flex-wrap: wrap;
 }
-.si {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 5px; font-size: 12px; font-weight: 500;
+.st {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-family: var(--mono);
+    color: var(--ink3); font-weight: 500;
 }
-.si-lbl { color: var(--text3); font-size: 11px; }
-.si-val { font-family: var(--mono); font-size: 11px; }
+.st-val { color: var(--ink); }
+.st-sep {
+    width: 1px; height: 12px;
+    background: var(--hairline); margin: 0 3px;
+}
 .fp {
-    display: inline-block; padding: 2px 7px; border-radius: 4px;
-    font-size: 10px; font-family: var(--mono);
+    display: inline-block; padding: 2px 6px;
+    border-radius: 4px; font-size: 10px;
+    font-family: var(--mono); font-weight: 500;
     color: var(--c);
     background: color-mix(in srgb, var(--c) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--c) 25%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 20%, transparent);
 }
 
+/* ── Metric row (Stripe tabular figures) ── */
 .metrics {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 10px; margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px; margin-bottom: 14px;
 }
 .mc {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px 16px;
+    background: var(--s1);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
 }
-.mc-lbl {
-    font-size: 11px; text-transform: uppercase;
-    letter-spacing: .07em; color: var(--text3); margin-bottom: 6px;
+.mc-label {
+    font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink4); margin-bottom: 4px;
 }
 .mc-val {
-    font-family: var(--mono); font-size: 22px;
-    font-weight: 600; line-height: 1; letter-spacing: -.5px;
+    font-family: var(--mono);
+    font-size: 20px; font-weight: 600;
+    line-height: 1.1; letter-spacing: -0.5px;
+    font-feature-settings: 'tnum' 1;
 }
-.mc-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 4px; }
+.mc-sub {
+    font-size: 10px; color: var(--ink4);
+    font-family: var(--mono); margin-top: 3px;
+    font-feature-settings: 'tnum' 1;
+}
 .up { color: var(--up); }
 .dn { color: var(--dn); }
 
+/* ── Grid layout ── */
 .grid {
-    display: grid; grid-template-columns: 1fr 320px;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 10px; margin-bottom: 10px;
 }
-.gap { display: flex; flex-direction: column; gap: 12px; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
 
-.pnl {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; overflow: hidden;
+/* ── Panel (Linear surface system) ── */
+.panel {
+    background: var(--s1);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-lg);
+    overflow: hidden;
 }
-.ph {
+.panel-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-bottom: 1px solid var(--border);
-    font-size: 12px; font-weight: 600; color: var(--text2);
-    text-transform: uppercase; letter-spacing: .05em;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--hairline);
+}
+.ph-left {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink3);
 }
 .ph-dot {
-    display: inline-block; width: 5px; height: 5px;
-    border-radius: 50%; background: var(--accent);
-    margin-right: 7px; vertical-align: middle;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
 }
-.ptag {
-    font-size: 10px; color: var(--text3);
-    background: var(--surface2); padding: 2px 7px;
+.ph-tag {
+    font-size: 10px; color: var(--ink4);
+    background: var(--s2); padding: 1px 6px;
     border-radius: 4px; font-family: var(--mono);
     text-transform: none; letter-spacing: 0;
+    border: 1px solid var(--hairline);
 }
-.cwrap { height: 180px; }
 
+/* ── Chart ── */
+.chart-wrap { height: 160px; }
+
+/* ── Tables ── */
 table { width: 100%; border-collapse: collapse; }
-thead tr { background: var(--surface2); }
+thead tr { background: var(--s2); }
 th {
-    padding: 8px 12px; text-align: left; font-size: 10px;
-    text-transform: uppercase; letter-spacing: .07em;
-    color: var(--text3); font-weight: 500;
-    border-bottom: 1px solid var(--border); white-space: nowrap;
+    padding: 7px 12px; text-align: left;
+    font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink4);
+    border-bottom: 1px solid var(--hairline);
+    white-space: nowrap;
 }
 th.num, td.num { text-align: right; }
 td {
-    padding: 8px 12px; border-bottom: 1px solid #ffffff06;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--hairline);
     font-size: 13px; vertical-align: middle;
 }
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #ffffff04; }
-.em { text-align: center; color: var(--text3); padding: 28px; font-size: 12px; }
+tbody tr:hover td { background: rgba(255,255,255,.02); }
+.em { text-align: center; color: var(--ink4); padding: 24px; font-size: 12px; }
 .tk { font-family: var(--mono); font-size: 12px; font-weight: 500; }
-.nm { color: var(--text2); font-size: 12px; }
-.dt { font-family: var(--mono); font-size: 11px; color: var(--text3); }
-.num { font-family: var(--mono); font-size: 12px; }
+.nm { color: var(--ink3); font-size: 12px; }
+.dt { font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+.num { font-family: var(--mono); font-size: 12px; font-feature-settings: 'tnum' 1; }
 .rk {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 4px;
+    width: 20px; height: 20px;
+    border-radius: var(--r-sm);
     font-family: var(--mono); font-size: 11px; font-weight: 600;
 }
-.table-scroll { max-height: 340px; overflow-y: auto; }
-.table-scroll::-webkit-scrollbar { width: 4px; }
-.table-scroll::-webkit-scrollbar-track { background: transparent; }
-.table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.scroll { max-height: 320px; overflow-y: auto; }
+.scroll::-webkit-scrollbar { width: 3px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 2px; }
 
+/* ── Factor rows ── */
 .fr {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 12px; border-bottom: 1px solid #ffffff06;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--hairline);
 }
 .fr:last-child { border-bottom: none; }
-.fn { font-family: var(--mono); font-size: 12px; font-weight: 600; flex: 1; }
+.fn { font-family: var(--mono); font-size: 12px; font-weight: 500; flex: 1; }
 .fi { font-family: var(--mono); font-size: 11px; }
-.fl {
-    font-size: 10px; padding: 2px 6px;
-    border-radius: 4px; font-weight: 500;
-}
+.fl { font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: 500; }
 
+/* ── Footer ── */
 footer {
-    border-top: 1px solid var(--border);
-    padding: 12px 24px;
+    border-top: 1px solid var(--hairline);
+    padding: 10px 20px;
     display: flex; align-items: center; justify-content: space-between;
-    font-size: 11px; color: var(--text3); margin-top: 20px;
+    font-size: 11px; color: var(--ink4);
+    font-family: var(--mono);
 }
 
-@media (max-width: 1000px) {
+/* ── Responsive ── */
+@media (max-width: 960px) {
     .metrics { grid-template-columns: repeat(3, 1fr); }
     .grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
     .metrics { grid-template-columns: repeat(2, 1fr); }
-    .wrap { padding: 12px; }
+    main { padding: 12px; }
     header { padding: 0 12px; }
 }
 </style>
@@ -202,172 +262,175 @@ footer {
 <body>
 
 <header>
-    <div class="brand">
-        <div class="brand-icon">Q</div>
-        <span class="brand-name">Quant Terminal</span>
-        <span class="brand-tag">沪深300 · 日频</span>
-    </div>
+    <a class="logo" href="#">
+        <div class="logo-mark">Q</div>
+        <span class="logo-text">Quant Terminal</span>
+        <span class="logo-sub">沪深300</span>
+    </a>
+    <div class="header-sep"></div>
     <div class="header-right">
-        <span>2026-06-16 21:52</span>
-        <span class="badge">hl_range_20d</span>
-        <span>IC: <strong style="color:#3fb950">+0.0435</strong></span>
+        <span>2026-06-16 22:38</span>
+        <span class="st-sep"></span>
+        <span class="tag">hl_range_20d</span>
+        <span>IC <span class="hr-strong" style="color:var(--up)">+0.0435</span></span>
+        <span class="st-sep"></span>
+        <span style="color:var(--ink4)">健康</span>
     </div>
 </header>
 
-<div class="wrap">
+<main>
 
-    <div class="status">
-        <span class="si">
-            <span class="si-lbl">趋势</span>
-            <span class="si-val" style="color:#6b7280">数据不足</span>
-        </span>
-        <span class="si">
-            <span class="si-lbl">波动</span>
-            <span class="si-val" style="color:#6b7280">未知</span>
-        </span>
-        <span class="si">
-            <span class="si-lbl">因子</span>
-            <span class="si-val">健康</span>
-            <span class="fp" style="--c:#3fb950;font-weight:700">hl_range_20d</span><span class="fp" style="--c:#3fb950;font-weight:400">volatility_20d</span><span class="fp" style="--c:#3fb950;font-weight:400">vwap_reversion</span><span class="fp" style="--c:#3fb950;font-weight:400">vwap_vol_weighted</span>
-        </span>
+    <div class="status-strip">
+        <span class="st">趋势 <span class="st-val" style="color:#62666d">数据不足</span></span>
+        <span class="st-sep"></span>
+        <span class="st">波动 <span class="st-val" style="color:#62666d">未知</span></span>
+        <span class="st-sep"></span>
+        <span class="st">因子 <span class="st-val">健康</span></span>
+        <span class="fp" style="--c:#27a644;font-weight:600">hl_range_20d</span><span class="fp" style="--c:#27a644;font-weight:400">volatility_20d</span><span class="fp" style="--c:#27a644;font-weight:400">vwap_reversion</span><span class="fp" style="--c:#27a644;font-weight:400">vwap_vol_weighted</span>
     </div>
 
     <div class="metrics">
         <div class="mc">
-            <div class="mc-lbl">今日盈亏</div>
+            <div class="mc-label">今日盈亏</div>
             <div class="mc-val up">+0.00</div>
             <div class="mc-sub up">+0.00%</div>
         </div>
         <div class="mc">
-            <div class="mc-lbl">累计盈亏</div>
+            <div class="mc-label">累计盈亏</div>
             <div class="mc-val up">+0.00</div>
             <div class="mc-sub">总收益</div>
         </div>
         <div class="mc">
-            <div class="mc-lbl">持仓</div>
+            <div class="mc-label">持仓</div>
             <div class="mc-val">0</div>
             <div class="mc-sub">只股票</div>
         </div>
         <div class="mc">
-            <div class="mc-lbl">信号</div>
+            <div class="mc-label">信号</div>
             <div class="mc-val">20</div>
             <div class="mc-sub">hl_range_20d</div>
         </div>
         <div class="mc">
-            <div class="mc-lbl">最优 IC</div>
+            <div class="mc-label">最优 IC</div>
             <div class="mc-val up">+0.0435</div>
-            <div class="mc-sub">因子 IC</div>
+            <div class="mc-sub">因子均值</div>
         </div>
     </div>
 
     <div class="grid">
-        <div class="gap">
-            <div class="pnl">
-                <div class="ph"><span><span class="ph-dot"></span>累计收益</span><span class="ptag">PnL</span></div>
-                <div class="cwrap"><div id="chart"><p class="em">暂无收益数据</p></div></div>
+        <div class="stack">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="ph-left"><span class="ph-dot"></span>累计收益</div>
+                    <span class="ph-tag">PnL</span>
+                </div>
+                <div class="chart-wrap"><div id="chart"><p class="em">暂无数据</p></div></div>
             </div>
-            <div class="pnl">
-                <div class="ph"><span><span class="ph-dot"></span>本周信号</span><span class="ptag">hl_range_20d</span></div>
-                <div class="table-scroll">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="ph-left"><span class="ph-dot"></span>本周信号</div>
+                    <span class="ph-tag">hl_range_20d</span>
+                </div>
+                <div class="scroll">
                     <table>
-                        <thead><tr><th style="width:36px">#</th><th>代码</th><th>名称</th><th class="num">因子值</th></tr></thead>
+                        <thead><tr><th style="width:34px">#</th><th>代码</th><th>名称</th><th class="num">因子值</th></tr></thead>
                         <tbody><tr>
-                <td><span class="rk" style="background:#d2992222;color:#d29922">1</span></td>
+                <td><span class="rk" style="background:#5e6ad222;color:#5e6ad2">1</span></td>
                 <td class="tk">300433.SZ</td>
                 <td class="nm">蓝思科技</td>
                 <td class="num up">+0.0740</td>
             </tr><tr>
-                <td><span class="rk" style="background:#c0c0c018;color:#9ca3af">2</span></td>
+                <td><span class="rk" style="background:#c0c0c010;color:#8a8f98">2</span></td>
                 <td class="tk">688126.SH</td>
                 <td class="nm">沪硅产业</td>
                 <td class="num up">+0.0575</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">3</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">3</span></td>
                 <td class="tk">688396.SH</td>
                 <td class="nm">华润微</td>
                 <td class="num up">+0.0452</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">4</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">4</span></td>
                 <td class="tk">600584.SH</td>
                 <td class="nm">长电科技</td>
                 <td class="num up">+0.0388</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">5</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">5</span></td>
                 <td class="tk">300394.SZ</td>
                 <td class="nm">天孚通信</td>
                 <td class="num up">+0.0384</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">6</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">6</span></td>
                 <td class="tk">300316.SZ</td>
                 <td class="nm">晶盛机电</td>
                 <td class="num up">+0.0374</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">7</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">7</span></td>
                 <td class="tk">688008.SH</td>
                 <td class="nm">澜起科技</td>
                 <td class="num up">+0.0374</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">8</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">8</span></td>
                 <td class="tk">688303.SH</td>
                 <td class="nm">大全能源</td>
                 <td class="num up">+0.0366</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">9</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">9</span></td>
                 <td class="tk">688041.SH</td>
                 <td class="nm">海光信息</td>
                 <td class="num up">+0.0362</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">10</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">10</span></td>
                 <td class="tk">002938.SZ</td>
                 <td class="nm">鹏鼎控股</td>
                 <td class="num up">+0.0362</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">11</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">11</span></td>
                 <td class="tk">002463.SZ</td>
                 <td class="nm">沪电股份</td>
                 <td class="num up">+0.0353</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">12</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">12</span></td>
                 <td class="tk">688981.SH</td>
                 <td class="nm">中芯国际</td>
                 <td class="num up">+0.0348</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">13</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">13</span></td>
                 <td class="tk">601100.SH</td>
                 <td class="nm">恒立液压</td>
                 <td class="num up">+0.0339</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">14</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">14</span></td>
                 <td class="tk">603296.SH</td>
                 <td class="nm">华勤技术</td>
                 <td class="num up">+0.0331</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">15</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">15</span></td>
                 <td class="tk">300476.SZ</td>
                 <td class="nm">胜宏科技</td>
                 <td class="num up">+0.0326</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">16</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">16</span></td>
                 <td class="tk">688012.SH</td>
                 <td class="nm">中微公司</td>
                 <td class="num up">+0.0312</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">17</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">17</span></td>
                 <td class="tk">002050.SZ</td>
                 <td class="nm">三花智控</td>
                 <td class="num up">+0.0309</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">18</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">18</span></td>
                 <td class="tk">600482.SH</td>
                 <td class="nm">中国动力</td>
                 <td class="num up">+0.0306</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">19</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">19</span></td>
                 <td class="tk">000725.SZ</td>
                 <td class="nm">京东方A</td>
                 <td class="num up">+0.0303</td>
             </tr><tr>
-                <td><span class="rk" style="background:#ffffff06;color:#6b7280">20</span></td>
+                <td><span class="rk" style="background:transparent;color:#62666d">20</span></td>
                 <td class="tk">600460.SH</td>
                 <td class="nm">士兰微</td>
                 <td class="num up">+0.0299</td>
@@ -376,44 +439,49 @@ footer {
                 </div>
             </div>
         </div>
-        <div class="gap">
-            <div class="pnl">
-                <div class="ph"><span><span class="ph-dot"></span>持仓</span><span class="ptag">0 只</span></div>
-                <div class="table-scroll">
+        <div class="stack">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="ph-left"><span class="ph-dot"></span>持仓</div>
+                    <span class="ph-tag">0 只</span>
+                </div>
+                <div class="scroll">
                     <table>
                         <thead><tr><th>代码</th><th>名称</th><th>日期</th><th class="num">价格</th><th class="num">数量</th></tr></thead>
                         <tbody><tr><td colspan="5" class="em">暂无持仓</td></tr></tbody>
                     </table>
                 </div>
             </div>
-            <div class="pnl">
-                <div class="ph"><span><span class="ph-dot"></span>因子状态</span></div>
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="ph-left"><span class="ph-dot"></span>因子状态</div>
+                </div>
                 <div><div class="fr" style="opacity:1">
-                <span style="color:#3fb950">●</span>
+                <span style="color:#27a644">●</span>
                 <span class="fn">hl_range_20d</span>
-                <span class="fi" style="color:#3fb950">+0.0435</span>
-                <span class="fl" style="color:#3fb950;background:#3fb95018">健康</span>
-            </div><div class="fr" style="opacity:0.6">
-                <span style="color:#3fb950">●</span>
+                <span class="fi" style="color:#27a644">+0.0435</span>
+                <span class="fl" style="color:#27a644;background:#27a64416">健康</span>
+            </div><div class="fr" style="opacity:0.55">
+                <span style="color:#27a644">●</span>
                 <span class="fn">volatility_20d</span>
-                <span class="fi" style="color:#3fb950">+0.0397</span>
-                <span class="fl" style="color:#3fb950;background:#3fb95018">健康</span>
-            </div><div class="fr" style="opacity:0.6">
-                <span style="color:#3fb950">●</span>
+                <span class="fi" style="color:#27a644">+0.0397</span>
+                <span class="fl" style="color:#27a644;background:#27a64416">健康</span>
+            </div><div class="fr" style="opacity:0.55">
+                <span style="color:#27a644">●</span>
                 <span class="fn">vwap_reversion</span>
-                <span class="fi" style="color:#3fb950">+0.0414</span>
-                <span class="fl" style="color:#3fb950;background:#3fb95018">健康</span>
-            </div><div class="fr" style="opacity:0.6">
-                <span style="color:#3fb950">●</span>
+                <span class="fi" style="color:#27a644">+0.0414</span>
+                <span class="fl" style="color:#27a644;background:#27a64416">健康</span>
+            </div><div class="fr" style="opacity:0.55">
+                <span style="color:#27a644">●</span>
                 <span class="fn">vwap_vol_weighted</span>
-                <span class="fi" style="color:#3fb950">+0.0340</span>
-                <span class="fl" style="color:#3fb950;background:#3fb95018">健康</span>
+                <span class="fi" style="color:#27a644">+0.0340</span>
+                <span class="fl" style="color:#27a644;background:#27a64416">健康</span>
             </div></div>
             </div>
         </div>
     </div>
 
-</div>
+</main>
 
 <footer>
     <span>Quant Terminal · AKShare + QClaw</span>
@@ -428,19 +496,19 @@ footer {
         var x = data.map(function(d) { return d.date; });
         var y = data.map(function(d) { return d.cum; });
         var last = y[y.length - 1];
-        var color = last >= 0 ? '#3fb950' : '#f85149';
-        var fill = last >= 0 ? 'rgba(63,185,80,0.07)' : 'rgba(248,81,73,0.07)';
+        var c = last >= 0 ? '#27a644' : '#f85149';
+        var f = last >= 0 ? 'rgba(39,166,68,0.07)' : 'rgba(248,81,73,0.07)';
         Plotly.newPlot('chart', [{
             x: x, y: y, type: 'scatter', mode: 'lines',
-            line: { color: color, width: 1.5 },
-            fill: 'tozeroy', fillcolor: fill,
+            line: { color: c, width: 1.5 },
+            fill: 'tozeroy', fillcolor: f,
             hovertemplate: '%{x}<br>%{y:.2f}<extra></extra>'
         }], {
-            margin: { l: 48, r: 12, t: 8, b: 28 },
+            margin: { l: 48, r: 8, t: 8, b: 24 },
             paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-            font: { family: 'JetBrains Mono, monospace', size: 10, color: '#484f58' },
-            xaxis: { gridcolor: '#21262d', linecolor: '#21262d', tickfont: { color: '#484f58', size: 9 }, showgrid: true, showline: false },
-            yaxis: { gridcolor: '#21262d', linecolor: '#21262d', tickfont: { color: '#484f58', size: 9 }, showgrid: true, showline: false },
+            font: { family: 'Geist Mono, ui-monospace', size: 10, color: '#62666d' },
+            xaxis: { gridcolor: '#23252a', linecolor: '#23252a', tickfont: { color: '#62666d', size: 9 }, showgrid: true, showline: false, zeroline: false },
+            yaxis: { gridcolor: '#23252a', linecolor: '#23252a', tickfont: { color: '#62666d', size: 9 }, showgrid: true, showline: false, zeroline: false },
             hovermode: 'x unified',
             config: { displayModeBar: false, responsive: true }
         }, { responsive: true });
