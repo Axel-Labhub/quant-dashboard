@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quant Dashboard — 2026-06-19 12:19</title>
+<title>Quant Dashboard — 2026-06-19 12:22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -362,7 +362,7 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
             <span>运行中</span>
         </div>
         <div class="header-right">
-            <span>2026-06-19 12:19</span>
+            <span>2026-06-19 12:22</span>
             <span>信号 20</span>
             <span>持仓 3</span>
         </div>
@@ -404,13 +404,11 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
         </div>
     </div>
 
-    <!-- 2-column Grid -->
+    <!-- 2-column Grid: left=signals, right=factor weights+attribution+rebalance+positions -->
     <div class="grid">
 
-        <!-- Left Column -->
+        <!-- Left Column: Signals only -->
         <div>
-
-            <!-- Signals Card -->
             <div class="card">
                 <div class="card-head">
                     <span>📊</span>
@@ -634,6 +632,10 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- Right Column: Factor Weights + Attribution/Rebalance + Positions -->
+        <div>
 
             <!-- Factor Weights Card -->
             <div class="card">
@@ -697,10 +699,7 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
                 </div>
             </div>
 
-        </div>
-
-        <!-- Right Column: Positions -->
-        <div>
+            <!-- Positions Card -->
             <div class="card">
                 <div class="card-head">
                     <span>💼</span>
@@ -758,6 +757,7 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
                     </table>
                 </div>
             </div>
+
         </div>
 
     </div>
