@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quant Dashboard — 2026-06-19 13:14</title>
+<title>Quant Dashboard — 2026-06-19 13:16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -369,7 +369,7 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
             <span>运行中</span>
         </div>
         <div class="header-right">
-            <span>2026-06-19 13:14</span>
+            <span>2026-06-19 13:16</span>
             <span>信号 20</span>
             <span>持仓 3</span>
         </div>
@@ -669,15 +669,14 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
                 </div>
             </div>
 
-            <!-- Attribution + Rebalance Side by Side -->
-            <div class="card-inner">
-                <div class="card" style="margin-bottom:0; border-right:none; border-radius:var(--radius) 0 0 var(--radius);">
-                    <div class="card-head">
-                        <span>📈</span>
-                        <span class="card-title">收益归因</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="data-row">
+            <!-- Attribution Card -->
+            <div class="card">
+                <div class="card-head">
+                    <span>📈</span>
+                    <span class="card-title">收益归因</span>
+                </div>
+                <div class="card-body">
+                    <div class="data-row">
                 <span>总收益</span>
                 <span class="num" style="color:#ef4444">-0.00%</span>
             </div><div class="data-row">
@@ -690,15 +689,17 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
                 <span>成本</span>
                 <span class="num" style="color:#ef4444">-0.01%</span>
             </div>
-                    </div>
                 </div>
-                <div class="card" style="margin-bottom:0; border-radius:0 var(--radius) var(--radius) 0;">
-                    <div class="card-head">
-                        <span>🔄</span>
-                        <span class="card-title">换仓</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="data-row">
+            </div>
+
+            <!-- Rebalance Card -->
+            <div class="card">
+                <div class="card-head">
+                    <span>🔄</span>
+                    <span class="card-title">换仓</span>
+                </div>
+                <div class="card-body">
+                    <div class="data-row">
                 <span style="color:#22c55e">买入</span>
                 <span class="num">8笔 / ¥72,273</span>
             </div><div class="data-row">
@@ -711,7 +712,6 @@ td.short { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
             <span>距下次换仓</span>
             <span class="num" style="color:#6366f1;">今日换仓日 🚀</span>
         </div>
-                    </div>
                 </div>
             </div>
 
