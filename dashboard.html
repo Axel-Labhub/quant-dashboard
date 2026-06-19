@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quant Terminal — 2026-06-19 12:03</title>
+<title>Quant Terminal — 2026-06-19 12:06</title>
 <style>
   :root {
     --bg: #060608;
@@ -136,8 +136,9 @@
   }
 
   /* ── Grid 2-col ── */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; margin-bottom: 16px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .grid-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
   /* ── Card ── */
   .card {
@@ -236,7 +237,7 @@
   <span class="hdr-tag">IC加权</span>
   <div class="hdr-spacer"></div>
   <div class="hdr-info">
-    <span>2026-06-19 12:03</span>
+    <span>2026-06-19 12:06</span>
     <span>因子: <strong>range_reversion</strong></span>
     <span>IC: <strong class="gain">+0.32</strong></span>
     <span>持仓: <strong>3</strong></span>
@@ -288,21 +289,23 @@
     </div>
   </div>
 
-  <!-- Signals + Factor Weights + Attribution (3-col) -->
-  <div class="grid-3">
+  <!-- Left: Signals + Factor Weights + Attr/Rebal | Right: Positions -->
+  <div class="grid">
 
-    <!-- Signals -->
-    <div class="card">
-      <div class="card-head">
-        <span class="icon">📊</span>
-        <span class="title">信号池</span>
-        <span class="card-meta">2026-06-18 · range_reversion</span>
-      </div>
-      <table>
-        <thead>
-          <tr><th>#</th><th>代码</th><th>名称</th><th></th><th>因子值</th><th>因子</th></tr>
-        </thead>
-        <tbody><tr class="tr-top3">
+    <!-- Left Column -->
+    <div>
+      <!-- Signals -->
+      <div class="card">
+        <div class="card-head">
+          <span class="icon">📊</span>
+          <span class="title">信号池</span>
+          <span class="card-meta">2026-06-18 · range_reversion</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>代码</th><th>名称</th><th></th><th>因子值</th><th>因子</th></tr>
+          </thead>
+          <tbody><tr class="tr-top3">
             <td class="rank rk1">1</td>
             <td class="mono ticker">688082.SH</td>
             <td class="name">盛美上海</td>
@@ -443,21 +446,21 @@
             <td class="mono fv">+0.1801</td>
             <td class="tag">momentum_5</td>
         </tr></tbody>
-      </table>
-    </div>
-
-    <!-- Factor Weights -->
-    <div class="card">
-      <div class="card-head">
-        <span class="icon">⚙️</span>
-        <span class="title">因子权重</span>
+        </table>
       </div>
-      <div class="ic-chart"><div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">IC趋势 (近15日)</div><svg width="200" height="32" viewBox="0 0 200 32" style="display:block"><rect x="-1" y="5" width="2" height="11" fill="#f0a500" opacity="0.8"/><rect x="13" y="5" width="2" height="11" fill="#f0a500" opacity="0.8"/><rect x="27" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="41" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="56" y="2" width="2" height="14" fill="#f0a500" opacity="0.8"/><rect x="70" y="1" width="2" height="15" fill="#f0a500" opacity="0.8"/><rect x="84" y="1" width="2" height="15" fill="#f0a500" opacity="0.8"/><rect x="99" y="4" width="2" height="12" fill="#f0a500" opacity="0.8"/><rect x="113" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="127" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="141" y="4" width="2" height="12" fill="#f0a500" opacity="0.8"/><rect x="156" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="170" y="2" width="2" height="14" fill="#f0a500" opacity="0.8"/><rect x="184" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="199" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="-1" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="13" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="27" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="41" y="12" width="2" height="4" fill="#5e6ad2" opacity="0.8"/><rect x="56" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="70" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="84" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="99" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="113" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="127" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="141" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="156" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="170" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="184" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="199" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="-1" y="11" width="2" height="5" fill="#26c997" opacity="0.8"/><rect x="13" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="27" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="41" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="56" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="70" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="84" y="11" width="2" height="5" fill="#26c997" opacity="0.8"/><rect x="99" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="113" y="14" width="2" height="2" fill="#26c997" opacity="0.8"/><rect x="127" y="15" width="2" height="1" fill="#26c997" opacity="0.8"/><rect x="141" y="15" width="2" height="1" fill="#26c997" opacity="0.8"/><rect x="156" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="170" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="184" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="199" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/></svg></div>
-      <table>
-        <thead>
-          <tr><th>因子</th><th></th><th>权重</th><th>IC</th><th>20MA</th><th>动量</th></tr>
-        </thead>
-        <tbody><tr>
+
+      <!-- Factor Weights -->
+      <div class="card" style="margin-top:12px">
+        <div class="card-head">
+          <span class="icon">⚙️</span>
+          <span class="title">因子权重</span>
+        </div>
+        <div class="ic-chart"><div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">IC趋势 (近15日)</div><svg width="200" height="32" viewBox="0 0 200 32" style="display:block"><rect x="-1" y="5" width="2" height="11" fill="#f0a500" opacity="0.8"/><rect x="13" y="5" width="2" height="11" fill="#f0a500" opacity="0.8"/><rect x="27" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="41" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="56" y="2" width="2" height="14" fill="#f0a500" opacity="0.8"/><rect x="70" y="1" width="2" height="15" fill="#f0a500" opacity="0.8"/><rect x="84" y="1" width="2" height="15" fill="#f0a500" opacity="0.8"/><rect x="99" y="4" width="2" height="12" fill="#f0a500" opacity="0.8"/><rect x="113" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="127" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="141" y="4" width="2" height="12" fill="#f0a500" opacity="0.8"/><rect x="156" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="170" y="2" width="2" height="14" fill="#f0a500" opacity="0.8"/><rect x="184" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="199" y="3" width="2" height="13" fill="#f0a500" opacity="0.8"/><rect x="-1" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="13" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="27" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="41" y="12" width="2" height="4" fill="#5e6ad2" opacity="0.8"/><rect x="56" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="70" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="84" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="99" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="113" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="127" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="141" y="9" width="2" height="7" fill="#5e6ad2" opacity="0.8"/><rect x="156" y="10" width="2" height="6" fill="#5e6ad2" opacity="0.8"/><rect x="170" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="184" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="199" y="11" width="2" height="5" fill="#5e6ad2" opacity="0.8"/><rect x="-1" y="11" width="2" height="5" fill="#26c997" opacity="0.8"/><rect x="13" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="27" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="41" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="56" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="70" y="10" width="2" height="6" fill="#26c997" opacity="0.8"/><rect x="84" y="11" width="2" height="5" fill="#26c997" opacity="0.8"/><rect x="99" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="113" y="14" width="2" height="2" fill="#26c997" opacity="0.8"/><rect x="127" y="15" width="2" height="1" fill="#26c997" opacity="0.8"/><rect x="141" y="15" width="2" height="1" fill="#26c997" opacity="0.8"/><rect x="156" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="170" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="184" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/><rect x="199" y="13" width="2" height="3" fill="#26c997" opacity="0.8"/></svg></div>
+        <table>
+          <thead>
+            <tr><th>因子</th><th></th><th>权重</th><th>IC</th><th>20MA</th><th>动量</th></tr>
+          </thead>
+          <tbody><tr>
             <td><span class="dot active-dot"></span>range_reversion</td>
             <td class="bar-cell"><svg width="60" height="8" viewBox="0 0 60 8"><rect x="30" y="2" width="37.62817946936315" height="4" fill="#26c997" rx="1"/></svg></td>
             <td class="mono">+0.439</td>
@@ -493,17 +496,17 @@
             <td class="mono">-0.30</td>
             <td class="mono gain">+1.37</td>
         </tr></tbody>
-      </table>
-    </div>
+        </table>
+      </div>
 
-    <!-- Attribution + Rebalance -->
-    <div>
-      <div class="card">
-        <div class="card-head">
-          <span class="icon">📈</span>
-          <span class="title">收益归因</span>
-        </div>
-        <div><div class="a-row">
+      <!-- Attribution + Rebalance side-by-side -->
+      <div class="grid-inner" style="margin-top:12px">
+        <div class="card">
+          <div class="card-head">
+            <span class="icon">📈</span>
+            <span class="title">收益归因</span>
+          </div>
+          <div><div class="a-row">
                 <span class="a-label">总收益</span>
                 <span class="mono" style="color:#eb5468">-0.000%</span>
             </div><div class="a-row">
@@ -516,33 +519,33 @@
                 <span class="a-label">成本</span>
                 <span class="mono" style="color:#eb5468">-0.011%</span>
             </div></div>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <div class="card-head">
-          <span class="icon">🔄</span>
-          <span class="title">最近换仓</span>
         </div>
-        <div><div class="a-row">
+        <div class="card">
+          <div class="card-head">
+            <span class="icon">🔄</span>
+            <span class="title">最近换仓</span>
+          </div>
+          <div><div class="a-row">
                 <span class="a-label" style="color:#26c997">▲ BUY</span>
                 <span class="mono">3笔 ¥30,220</span>
             </div></div>
+        </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- Positions -->
-  <div class="card">
-    <div class="card-head">
-      <span class="icon">💼</span>
-      <span class="title">持仓详情</span>
-      <span class="card-meta">3 只 · 成本¥30,220 · 市值¥30,220</span>
-    </div>
-    <table>
-      <thead>
-        <tr><th>代码</th><th>名称</th><th>股数</th><th>成本</th><th>现价</th><th>成本额</th><th>市值</th><th></th><th>盈亏</th><th>盈亏%</th></tr>
-      </thead>
-      <tbody><tr>
+    <!-- Right Column: Positions -->
+    <div class="card">
+      <div class="card-head">
+        <span class="icon">💼</span>
+        <span class="title">持仓详情</span>
+        <span class="card-meta">3 只 · 成本¥30,220 · 市值¥30,220</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>代码</th><th>名称</th><th>股数</th><th>成本</th><th>现价</th><th>成本额</th><th>市值</th><th></th><th>盈亏</th><th>盈亏%</th></tr>
+        </thead>
+        <tbody><tr>
             <td class="mono ticker">300433.SZ</td>
             <td class="name">蓝思科技</td>
             <td class="mono">200</td>
@@ -576,7 +579,10 @@
             <td class="mono gain">¥+0</td>
             <td class="mono gain">+0.0%</td>
         </tr></tbody>
-    </table>
+      </table>
+      </div>
+    </div>
+
   </div>
 
 </div>
