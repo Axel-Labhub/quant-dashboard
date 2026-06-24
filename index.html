@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>EMTS · 赤道动量交易系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./EMTS · 赤道动量交易系统_files/css2" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0c0f; --slate:#11151c; --surface:#161b24; --raised:#1c2230;
+  --line:#242c3a; --line-subtle:#1e2634;
+  --text:#d4d8e0; --text-dim:#8890a0; --text-muted:#5a6170;
+  --amber:#f0a030; --amber-dim:#b07818; --amber-glow:rgba(240,160,48,.12);
+  --vermilion:#e04848; --vermilion-dim:rgba(224,72,72,.12);
+  --teal:#20a090; --teal-dim:rgba(32,160,144,.12);
+  --sky:#5090d0; --sky-dim:rgba(80,144,208,.1);
+  --radius:6px; --radius-sm:4px;
+}
+:root.light{
+  --ink:#f5f5f5; --slate:#e8e8e8; --surface:#fafafa; --raised:#eee;
+  --line:#d0d0d0; --line-subtle:#e0e0e0;
+  --text:#1a1a1a; --text-dim:#666; --text-muted:#999;
+  --amber:#d4891a; --amber-dim:#b07014; --amber-glow:rgba(212,137,26,.1);
+  --vermilion:#c0392b; --vermilion-dim:rgba(192,57,43,.1);
+  --teal:#17806d; --teal-dim:rgba(23,128,109,.1);
+  --sky:#3068a0; --sky-dim:rgba(48,104,160,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ink); color:var(--text);
+  font:14px/1.5 'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  -webkit-font-smoothing:antialiased; min-height:100vh;
+}
+.mono{font-family:'JetBrains Mono','SF Mono','Cascadia Code',monospace;font-variant-numeric:tabular-nums}
+
+/* ── Header ── */
+header{
+  background:var(--slate); border-bottom:1px solid var(--line);
+  padding:14px 20px; display:flex; justify-content:space-between; align-items:center;
+  position:sticky; top:0; z-index:20; backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand h1{font-size:20px;font-weight:700;letter-spacing:.04em;background:linear-gradient(135deg,var(--amber) 0%,var(--vermilion) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.brand .ver{
+  font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600;
+  color:var(--amber); vertical-align:super; margin-left:2px;
+}
+.brand .sub{font-size:12px;color:var(--text-dim);font-weight:400}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--teal);
+  box-shadow:0 0 6px var(--teal); animation:pulse 2s infinite;
+  display:inline-block;margin-right:6px;vertical-align:middle
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.update-time{font-size:12px;color:var(--text-dim)}
+.update-time .mono{color:var(--text);font-size:13px}
+
+/* ── Layout ── */
+main{max-width:960px;margin:0 auto;padding:20px 20px 40px}
+
+/* ── Stat Strip ── */
+.stat-strip{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+  margin-bottom:24px;
+}
+.stat{
+  background:var(--surface); border:1px solid var(--line-subtle);
+  border-radius:var(--radius); padding:14px 16px; position:relative; overflow:hidden;
+}
+.stat::after{
+  content:''; position:absolute; top:0;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--amber),transparent 60%); opacity:.3;
+}
+.stat .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.stat .value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;letter-spacing:-1px}
+.stat .value.up{color:var(--vermilion)} .stat .value.down{color:var(--teal)}
+.stat .value.neutral{color:var(--amber)}
+.stat .sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* ── Section ── */
+.section{margin-bottom:28px}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.section-head h2{font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+
+/* ── Momentum Heatmap Strip ── */
+.heatmap{
+  display:flex;gap:2px;height:48px;margin-bottom:24px;
+}
+.heat-cell{
+  flex:1;min-width:0;border-radius:var(--radius-sm);position:relative;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+}
+.heat-cell:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:2}
+.heat-cell .sym{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.heat-cell.buy{background:linear-gradient(to top,var(--vermilion),rgba(224,72,72,.3))}
+.heat-cell.hold{background:linear-gradient(to top,var(--sky),rgba(80,144,208,.3))}
+.heat-cell.sell{background:linear-gradient(to top,var(--teal),rgba(32,160,144,.3))}
+.heat-legend{display:flex;justify-content:space-between;margin-top:6px}
+.heat-legend span{font-size:10px;color:var(--text-dim)}
+
+/* ── Leaderboard Cards ── */
+.leader-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.leader-card{
+  background:var(--surface);border:1px solid var(--line-subtle);
+  border-radius:var(--radius);padding:12px;position:relative;
+}
+.leader-card.buy{border-left:2px solid var(--vermilion)}
+.leader-card.sell{border-left:2px solid var(--teal)}
+.leader-card .rank{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.leader-card .name{font-size:14px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leader-card .score-row{display:flex;justify-content:space-between;align-items:baseline}
+.leader-card .score{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--amber)}
+.leader-card .delta{font-family:'JetBrains Mono',monospace;font-size:11px}
+.leader-card .delta.pos{color:var(--vermilion)} .leader-card .delta.neg{color:var(--teal)}
+.leader-card .tag{
+  position:absolute;top:8px;right:8px;font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;
+}
+.tag-buy{background:var(--vermilion-dim);color:var(--vermilion)}
+.tag-sell{background:var(--teal-dim);color:var(--teal)}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  background:var(--raised);border-bottom:1px solid var(--line);
+  padding:10px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;z-index:2;
+}
+thead th:first-child{padding-left:14px} thead th:last-child{padding-right:14px}
+thead th.num{text-align:right}
+tbody td{padding:9px 8px;border-bottom:1px solid var(--line-subtle)}
+tbody td:first-child{padding-left:14px} tbody td:last-child{padding-right:14px}
+tbody td.num{font-family:'JetBrains Mono',monospace;text-align:right;font-size:13px}
+tbody tr:hover{background:var(--raised)}
+tr.buy-row{background:linear-gradient(90deg,var(--vermilion-dim),transparent 30%)}
+tr.sell-row{background:linear-gradient(90deg,var(--teal-dim),transparent 30%)}
+.sym-cell{font-weight:600}
+.sig-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+.sig-dot.buy{background:var(--vermilion);box-shadow:0 0 4px var(--vermilion)}
+.sig-dot.hold{background:var(--amber)}
+.sig-dot.sell{background:var(--teal);box-shadow:0 0 4px var(--teal)}
+.ma-pass{color:var(--teal)} .ma-fail{color:var(--vermilion)}
+.ret-pos{color:var(--vermilion)} .ret-neg{color:var(--teal)}
+
+/* ── Equity Chart ── */
+.eq-line{fill:none;stroke:url(#eqLineGrad);stroke-width:2;vector-effect:non-scaling-stroke}
+.eq-area{fill:url(#eqGrad);opacity:1}
+.eq-benchmark{fill:none;stroke:var(--text-dim);stroke-width:1.5;stroke-dasharray:6 3;vector-effect:non-scaling-stroke;opacity:.5}
+.eq-grid{stroke:var(--line-subtle);stroke-width:.5;vector-effect:non-scaling-stroke}
+.eq-label{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--text-muted)}
+
+/* ── Footer ── */
+footer{text-align:center;padding:24px;color:var(--text-muted);font-size:11px;border-top:1px solid var(--line-subtle)}
+footer a{color:var(--text-dim);text-decoration:none}
+
+/* ── Mobile ── */
+@media(max-width:640px){
+  .stat-strip{grid-template-columns:repeat(2,1fr);gap:6px}
+  .leader-grid{grid-template-columns:repeat(2,1fr)}
+  .heatmap{height:36px}
+  .heat-cell .sym{font-size:7px}
+  main{padding:14px 10px 30px}
+}
+/* 趋势弹窗 */
+#trendModal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;display:flex;align-items:center;justify-content:center}
+.trend-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7)}
+.trend-card{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;width:min(90vw,420px);box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.trend-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:600}
+.trend-header button{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer}
+#rankTable tr{cursor:pointer}
+#rankTable tr:hover{background:rgba(240,160,48,0.06)}
+</style>
+<script src="./EMTS · 赤道动量交易系统_files/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'a6859db76e0c4227a02d8a72f27f50cd'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>EMTS</h1>
+    <span class="ver">v5</span>
+  </div>
+  <div class="update-time">
+    <span id="marketClock" style="font-size:10px;margin-right:10px;padding:2px 8px;border-radius:3px;font-weight:600">--</span>
+    <button id="themeToggle" onclick="toggleTheme()" title="切换浅色/深色" style="background:var(--surface);border:1px solid var(--line);color:var(--text-dim);font-size:14px;width:30px;height:28px;border-radius:var(--radius-sm);cursor:pointer;margin-right:10px;line-height:1">☾</button>
+    <span class="live-dot"></span>
+    <span id="updateDate" style="font-size:12px;color:var(--text-dim);margin-right:10px">2026-06-19</span>
+    <span id="freshness" style="font-size: 10px; padding: 1px 6px; border-radius: 3px; background: var(--amber-glow); color: var(--amber);">○ 20h前</span>
+  </div>
+</header>
+
+<main>
+  <!-- Stat Strip -->
+  <div class="stat-strip">
+    <div class="stat">
+      <div class="label">舰队动量均值</div>
+      <div class="value neutral mono" id="statMean">13.8</div>
+      <div class="sub">vs 中位 <span class="mono" id="statMedian">11.6</span></div>
+    </div>
+    <div class="stat">
+      <div class="label">Top 5 均值</div>
+      <div class="value up mono" id="statTop5">23.2</div>
+      <div class="sub">领先舰队 <span class="mono" id="statLead">+9.4</span></div>
+    </div>
+    <div class="stat">
+      <div class="label">买入候选</div>
+      <div class="value up mono" id="statBuy">7</div>
+      <div class="sub">排名 1-7</div>
+    </div>
+    <div class="stat">
+      <div class="label">卖出候选</div>
+      <div class="value down mono" id="statSell">11</div>
+      <div class="sub">排名 15+</div>
+    </div>
+  </div>
+
+  <!-- Equity Curve -->
+  <div class="section" id="equitySection" style="display: block;">
+    <div class="section-head">
+      <h2>📈 收益曲线</h2>
+      <span style="font-size:11px;color:var(--text-dim)">
+        3个月 · 起始 <span class="mono" id="eqStart" style="color:var(--text)">$100,000</span> →
+        当前 <span class="mono" id="eqCurrent" style="color:var(--amber)">$132,318 <span style="color:var(--vermilion)">+32.3%</span> <span style="font-size:10px;color:var(--text-dim)">vs 纳指+22.2%</span></span>
+      </span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--line-subtle);border-radius:var(--radius);padding:16px">
+      <svg id="equityChart" viewBox="0 0 900 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-height:380px"><defs><lineargradient id="eqGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--amber)" stop-opacity=".35"></stop><stop offset="60%" stop-color="var(--amber)" stop-opacity=".06"></stop><stop offset="100%" stop-color="var(--amber)" stop-opacity="0"></stop></lineargradient><lineargradient id="eqLineGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="var(--amber-dim)"></stop><stop offset="100%" stop-color="var(--amber)"></stop></lineargradient></defs><line x1="50" y1="264.0" x2="880" y2="264.0" class="eq-grid"></line><line x1="50" y1="203.0" x2="880" y2="203.0" class="eq-grid"></line><line x1="50" y1="142.0" x2="880" y2="142.0" class="eq-grid"></line><line x1="50" y1="81.0" x2="880" y2="81.0" class="eq-grid"></line><line x1="50" y1="20.0" x2="880" y2="20.0" class="eq-grid"></line><line x1="50" y1="246.2" x2="880" y2="246.2" stroke="var(--line)" stroke-width=".5" stroke-dasharray="3 4"></line><text x="44" y="268.0" class="eq-label" text-anchor="end">$97k</text><text x="44" y="207.0" class="eq-label" text-anchor="end">$107k</text><text x="44" y="146.0" class="eq-label" text-anchor="end">$118k</text><text x="44" y="85.0" class="eq-label" text-anchor="end">$128k</text><text x="44" y="24.0" class="eq-label" text-anchor="end">$138k</text><text x="50.0" y="290" class="eq-label" text-anchor="middle">04-08</text><text x="212.7" y="290" class="eq-label" text-anchor="middle">04-22</text><text x="375.5" y="290" class="eq-label" text-anchor="middle">05-06</text><text x="538.2" y="290" class="eq-label" text-anchor="middle">05-20</text><text x="701.0" y="290" class="eq-label" text-anchor="middle">06-04</text><text x="863.7" y="290" class="eq-label" text-anchor="middle">06-18</text><text x="884" y="49.01927185513744" class="eq-label" fill="var(--amber)" font-weight="600">$132k</text><text x="884" y="110.91232724565499" class="eq-label" fill="var(--text-dim)">纳指</text><polyline points="50,246.2 66.27450980392157,242.2 82.54901960784314,241.4 98.8235294117647,241.4 115.09803921568627,224.3 131.37254901960785,215.7 147.6470588235294,212.7 163.921568627451,204.5 180.19607843137254,204.5 196.47058823529412,208.9 212.7450980392157,198.4 229.01960784313727,202.0 245.2941176470588,189.8 261.5686274509804,189.8 277.843137254902,196.0 294.11764705882354,192.1 310.3921568627451,186.1 326.66666666666663,179.8 342.94117647058823,179.8 359.21568627450984,172.5 375.4901960784314,158.7 391.7647058823529,159.5 408.03921568627453,143.6 424.3137254901961,143.6 440.5882352941176,147.5 456.8627450980392,140.2 473.1372549019608,135.2 489.4117647058824,145.8 505.686274509804,145.8 521.9607843137255,153.1 538.2352941176471,141.7 554.5098039215686,140.4 570.7843137254902,137.4 587.0588235294118,137.4 603.3333333333333,125.8 619.6078431372549,119.8 635.8823529411765,117.2 652.156862745098,117.2 668.4313725490197,109.5 684.7058823529411,111.4 700.9803921568628,114.9 717.2549019607843,149.6 733.5294117647059,149.6 749.8039215686274,146.9 766.0784313725491,160.7 782.3529411764706,137.9 798.6274509803922,133.7 814.9019607843137,133.7 831.1764705882352,125.4 847.4509803921569,132.6 863.7254901960785,114.9 880,114.9" class="eq-benchmark"></polyline><polygon points="50,246.2 66.27450980392157,246.2 82.54901960784314,245.9 98.8235294117647,246.1 115.09803921568627,245.3 131.37254901960785,243.2 147.6470588235294,242.4 163.921568627451,239.4 180.19607843137254,230.6 196.47058823529412,232.8 212.7450980392157,237.3 229.01960784313727,225.1 245.2941176470588,235.3 261.5686274509804,231.5 277.843137254902,225.9 294.11764705882354,229.5 310.3921568627451,231.8 326.66666666666663,213.5 342.94117647058823,213.9 359.21568627450984,213.9 375.4901960784314,213.8 391.7647058823529,200.2 408.03921568627453,210.1 424.3137254901961,173.9 440.5882352941176,165.1 456.8627450980392,173.3 473.1372549019608,149.4 489.4117647058824,134.2 505.686274509804,157.8 521.9607843137255,170.0 538.2352941176471,185.9 554.5098039215686,158.3 570.7843137254902,151.3 587.0588235294118,143.7 603.3333333333333,86.0 619.6078431372549,75.3 635.8823529411765,71.2 652.156862745098,70.7 668.4313725490197,63.7 684.7058823529411,57.7 700.9803921568628,43.8 717.2549019607843,62.7 733.5294117647059,126.5 749.8039215686274,93.9 766.0784313725491,116.5 782.3529411764706,129.1 798.6274509803922,94.9 814.9019607843137,102.3 831.1764705882352,66.6 847.4509803921569,85.0 863.7254901960785,80.4 880,55.0 880.0,264 50,264" class="eq-area"></polygon><polyline points="50,246.2 66.27450980392157,246.2 82.54901960784314,245.9 98.8235294117647,246.1 115.09803921568627,245.3 131.37254901960785,243.2 147.6470588235294,242.4 163.921568627451,239.4 180.19607843137254,230.6 196.47058823529412,232.8 212.7450980392157,237.3 229.01960784313727,225.1 245.2941176470588,235.3 261.5686274509804,231.5 277.843137254902,225.9 294.11764705882354,229.5 310.3921568627451,231.8 326.66666666666663,213.5 342.94117647058823,213.9 359.21568627450984,213.9 375.4901960784314,213.8 391.7647058823529,200.2 408.03921568627453,210.1 424.3137254901961,173.9 440.5882352941176,165.1 456.8627450980392,173.3 473.1372549019608,149.4 489.4117647058824,134.2 505.686274509804,157.8 521.9607843137255,170.0 538.2352941176471,185.9 554.5098039215686,158.3 570.7843137254902,151.3 587.0588235294118,143.7 603.3333333333333,86.0 619.6078431372549,75.3 635.8823529411765,71.2 652.156862745098,70.7 668.4313725490197,63.7 684.7058823529411,57.7 700.9803921568628,43.8 717.2549019607843,62.7 733.5294117647059,126.5 749.8039215686274,93.9 766.0784313725491,116.5 782.3529411764706,129.1 798.6274509803922,94.9 814.9019607843137,102.3 831.1764705882352,66.6 847.4509803921569,85.0 863.7254901960785,80.4 880,55.0" class="eq-line"></polyline></svg>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:8px;font-size:11px;color:var(--text-dim)">
+        <span><span style="display:inline-block;width:12px;height:2px;background:var(--amber);vertical-align:middle;margin-right:4px"></span>策略</span>
+        <span><span style="display:inline-block;width:12px;height:2px;border-bottom:1px dashed var(--text-dim);vertical-align:middle;margin-right:4px"></span>纳斯达克100</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alpaca Portfolio -->
+  <div class="section" id="portfolioSection" style="display: block;">
+    <div class="section-head">
+      <h2>💼 纸交易持仓</h2>
+      <span style="font-size:11px;color:var(--text-dim)">现金 <span class="mono" id="portCash" style="color:var(--text)">$20,121</span> · 权益 <span class="mono" id="portEquity" style="color:var(--amber)">$132,318</span></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>标的</th><th class="num">持仓</th><th class="num">成本</th><th class="num">现价</th>
+          <th class="num">市值</th><th class="num">盈亏%</th><th>动量</th>
+        </tr></thead>
+        <tbody id="portfolioTable"><tr>
+      <td class="sym-cell">KO</td>
+      <td class="num">334</td>
+      <td class="num mono">79.05</td>
+      <td class="num mono">79.39</td>
+      <td class="num mono">$26,516</td>
+      <td class="num"><span class="ret-pos">+0.4%</span></td>
+      <td><span class="sig-dot hold"></span>持有 (#13)</td>
+    </tr><tr>
+      <td class="sym-cell">META</td>
+      <td class="num">46</td>
+      <td class="num mono">573.33</td>
+      <td class="num mono">577.22</td>
+      <td class="num mono">$26,552</td>
+      <td class="num"><span class="ret-pos">+0.7%</span></td>
+      <td><span class="sig-dot sell"></span>卖出 (#21)</td>
+    </tr><tr>
+      <td class="sym-cell">ORCL</td>
+      <td class="num">144</td>
+      <td class="num mono">183.57</td>
+      <td class="num mono">184.29</td>
+      <td class="num mono">$26,538</td>
+      <td class="num"><span class="ret-pos">+0.4%</span></td>
+      <td><span class="sig-dot sell"></span>卖出 (#24)</td>
+    </tr><tr>
+      <td class="sym-cell">SNDK</td>
+      <td class="num">3</td>
+      <td class="num mono">2112.00</td>
+      <td class="num mono">2184.75</td>
+      <td class="num mono">$6,554</td>
+      <td class="num"><span class="ret-pos">+3.4%</span></td>
+      <td><span class="sig-dot buy"></span>买入 (#5)</td>
+    </tr><tr>
+      <td class="sym-cell">VST</td>
+      <td class="num">159</td>
+      <td class="num mono">166.19</td>
+      <td class="num mono">163.75</td>
+      <td class="num mono">$26,036</td>
+      <td class="num"><span class="ret-neg">-1.5%</span></td>
+      <td><span class="sig-dot buy"></span>买入 (#4)</td>
+    </tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Order Status -->
+  <div class="section" id="orderSection" style="display: block;">
+    <div class="section-head"><h2>📋 计划订单</h2><span class="subhead" id="orderCount">7 笔</span><span style="font-size:11px;color:var(--text-secondary);margin-left:8px" id="orderTiming"></span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>标的</th><th>方向</th><th>数量</th><th>状态</th><th>成交时间</th></tr></thead>
+      <tbody id="orderTable"><tr><td class="sym-cell">AMD</td><td><span class="ret-pos">🟢 买入</span></td><td class="num">92</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">ASML</td><td><span class="ret-pos">🟢 买入</span></td><td class="num">25</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">MU</td><td><span class="ret-pos">🟢 买入</span></td><td class="num">43</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">STX</td><td><span class="ret-pos">🟢 买入</span></td><td class="num">46</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">META</td><td><span class="ret-neg">🔴 卖出</span></td><td class="num">46</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">ORCL</td><td><span class="ret-neg">🔴 卖出</span></td><td class="num">144</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr><tr><td class="sym-cell">ARM</td><td><span class="ret-pos">🟢 买入</span></td><td class="num">449</td><td>⏳ 排队</td><td style="font-size:11px;color:var(--text-dim)">—</td></tr></tbody>
+    </table></div>
+  </div>
+
+  <!-- Momentum Heatmap -->
+  <div class="section">
+    <div class="section-head"><h2>动量热力图</h2></div>
+    <div class="heatmap" id="heatmap"><div class="heat-cell buy" style="opacity:0.9988023952095808" title="ARM #1 · 24.3分">
+      <span class="sym">ARM</span>
+    </div><div class="heat-cell buy" style="opacity:0.9790887361080308" title="希捷 #2 · 23.5分">
+      <span class="sym">STX</span>
+    </div><div class="heat-cell buy" style="opacity:0.9618392843941745" title="美光 #3 · 22.8分">
+      <span class="sym">MU</span>
+    </div><div class="heat-cell buy" style="opacity:0.9593750770064808" title="Vistra #4 · 22.7分">
+      <span class="sym">VST</span>
+    </div><div class="heat-cell buy" style="opacity:0.9569108696187871" title="闪迪 #5 · 22.6分">
+      <span class="sym">SNDK</span>
+    </div><div class="heat-cell buy" style="opacity:0.9273403809664621" title="阿斯麦 #6 · 21.4分">
+      <span class="sym">ASML</span>
+    </div><div class="heat-cell buy" style="opacity:0.919947758803381" title="AMD #7 · 21.1分">
+      <span class="sym">AMD</span>
+    </div><div class="heat-cell hold" style="opacity:0.8977698923141372" title="台积电 #8 · 20.2分">
+      <span class="sym">TSM</span>
+    </div><div class="heat-cell hold" style="opacity:0.8657351962741184" title="戴尔 #9 · 18.9分">
+      <span class="sym">DELL</span>
+    </div><div class="heat-cell hold" style="opacity:0.8534141593356497" title="迈威尔 #10 · 18.4分">
+      <span class="sym">MRVL</span>
+    </div><div class="heat-cell hold" style="opacity:0.8041300115817747" title="维谛 #11 · 16.4分">
+      <span class="sym">VRT</span>
+    </div><div class="heat-cell hold" style="opacity:0.7449890342771248" title="Coherent #12 · 14分">
+      <span class="sym">COHR</span>
+    </div><div class="heat-cell hold" style="opacity:0.6858480569724748" title="可口可乐 #13 · 11.6分">
+      <span class="sym">KO</span>
+    </div><div class="heat-cell hold" style="opacity:0.6759912274216998" title="谷歌 #14 · 11.2分">
+      <span class="sym">GOOG</span>
+    </div><div class="heat-cell sell" style="opacity:0.6759912274216998" title="苹果 #15 · 11.2分">
+      <span class="sym">AAPL</span>
+    </div><div class="heat-cell sell" style="opacity:0.6464207387693749" title="CrowdStrike #16 · 10分">
+      <span class="sym">CRWD</span>
+    </div><div class="heat-cell sell" style="opacity:0.6069934205662748" title="博通 #17 · 8.4分">
+      <span class="sym">AVGO</span>
+    </div><div class="heat-cell sell" style="opacity:0.6045292131785811" title="英伟达 #18 · 8.3分">
+      <span class="sym">NVDA</span>
+    </div><div class="heat-cell sell" style="opacity:0.5996007984031936" title="特斯拉 #19 · 8.1分">
+      <span class="sym">TSLA</span>
+    </div><div class="heat-cell sell" style="opacity:0.5946723836278062" title="IBM #20 · 7.9分">
+      <span class="sym">IBM</span>
+    </div><div class="heat-cell sell" style="opacity:0.5651018949754811" title="Meta #21 · 6.7分">
+      <span class="sym">META</span>
+    </div><div class="heat-cell sell" style="opacity:0.5601734802000937" title="亚马逊 #22 · 6.5分">
+      <span class="sym">AMZN</span>
+    </div><div class="heat-cell sell" style="opacity:0.5281387841600749" title="Palantir #23 · 5.2分">
+      <span class="sym">PLTR</span>
+    </div><div class="heat-cell sell" style="opacity:0.47639042901850626" title="甲骨文 #24 · 3.1分">
+      <span class="sym">ORCL</span>
+    </div><div class="heat-cell sell" style="opacity:0.4" title="火箭实验室 #25 · 0分">
+      <span class="sym">RKLB</span>
+    </div></div>
+    <div class="heat-legend">
+      <span style="color:var(--vermilion)">● 买入区</span>
+      <span style="color:var(--sky)">● 中性</span>
+      <span style="color:var(--teal)">● 卖出区</span>
+      <span>分数 0–30</span>
+    </div>
+  </div>
+
+  <!-- Top 10 Leaderboard -->
+  <div class="section">
+    <div class="section-head"><h2>🔥 动量领袖 Top 10</h2></div>
+    <div class="leader-grid" id="leaderboard"><div class="leader-card buy">
+      <div class="rank">#1</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">ARM</div>
+      <div class="score-row">
+        <span class="score">24.3</span>
+        <span class="delta pos">+63.2%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#2</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">希捷</div>
+      <div class="score-row">
+        <span class="score">23.5</span>
+        <span class="delta pos">+41.9%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#3</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">美光</div>
+      <div class="score-row">
+        <span class="score">22.8</span>
+        <span class="delta pos">+42.5%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#4</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">Vistra</div>
+      <div class="score-row">
+        <span class="score">22.7</span>
+        <span class="delta pos">+10.3%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#5</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">闪迪</div>
+      <div class="score-row">
+        <span class="score">22.6</span>
+        <span class="delta pos">+40.7%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#6</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">阿斯麦</div>
+      <div class="score-row">
+        <span class="score">21.4</span>
+        <span class="delta pos">+20.5%</span>
+      </div>
+    </div><div class="leader-card buy">
+      <div class="rank">#7</div>
+      <span class="tag tag-buy">买</span>
+      <div class="name">AMD</div>
+      <div class="score-row">
+        <span class="score">21.1</span>
+        <span class="delta pos">+14.5%</span>
+      </div>
+    </div><div class="leader-card ">
+      <div class="rank">#8</div>
+      
+      <div class="name">台积电</div>
+      <div class="score-row">
+        <span class="score">20.2</span>
+        <span class="delta pos">+7.8%</span>
+      </div>
+    </div><div class="leader-card ">
+      <div class="rank">#9</div>
+      
+      <div class="name">戴尔</div>
+      <div class="score-row">
+        <span class="score">18.9</span>
+        <span class="delta pos">+72.6%</span>
+      </div>
+    </div><div class="leader-card ">
+      <div class="rank">#10</div>
+      
+      <div class="name">迈威尔</div>
+      <div class="score-row">
+        <span class="score">18.4</span>
+        <span class="delta pos">+55%</span>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Full Ranking Table -->
+  <div class="section">
+    <div class="section-head"><h2>📋 舰队完整排名</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>标的</th><th class="num">#</th><th class="num">动量</th>
+          <th class="num">多周期</th><th class="num">TSM</th><th class="num">20日%</th>
+          <th>MA</th><th>信号</th>
+        </tr></thead>
+        <tbody id="rankTable"><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>ARM</td>
+      <td class="num">1</td>
+      <td class="num"><strong>24.3</strong></td>
+      <td class="num">17</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+63.2%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>希捷</td>
+      <td class="num">2</td>
+      <td class="num"><strong>23.5</strong></td>
+      <td class="num">16.9</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+41.9%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>美光</td>
+      <td class="num">3</td>
+      <td class="num"><strong>22.8</strong></td>
+      <td class="num">14.8</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+42.5%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>Vistra</td>
+      <td class="num">4</td>
+      <td class="num"><strong>22.7</strong></td>
+      <td class="num">13.6</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+10.3%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>闪迪</td>
+      <td class="num">5</td>
+      <td class="num"><strong>22.6</strong></td>
+      <td class="num">14.6</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+40.7%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>阿斯麦</td>
+      <td class="num">6</td>
+      <td class="num"><strong>21.4</strong></td>
+      <td class="num">10.9</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+20.5%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="buy-row">
+      <td class="sym-cell"><span class="sig-dot buy"></span>AMD</td>
+      <td class="num">7</td>
+      <td class="num"><strong>21.1</strong></td>
+      <td class="num">12.4</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+14.5%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">买入</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>台积电</td>
+      <td class="num">8</td>
+      <td class="num"><strong>20.2</strong></td>
+      <td class="num">10.2</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+7.8%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>戴尔</td>
+      <td class="num">9</td>
+      <td class="num"><strong>18.9</strong></td>
+      <td class="num">15.5</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+72.6%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>迈威尔</td>
+      <td class="num">10</td>
+      <td class="num"><strong>18.4</strong></td>
+      <td class="num">10.5</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+55%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>维谛</td>
+      <td class="num">11</td>
+      <td class="num"><strong>16.4</strong></td>
+      <td class="num">11.6</td>
+      <td class="num">1</td>
+      <td class="num"><span class="ret-pos">+0.6%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>Coherent</td>
+      <td class="num">12</td>
+      <td class="num"><strong>14</strong></td>
+      <td class="num">7.8</td>
+      <td class="num">3</td>
+      <td class="num"><span class="ret-pos">+5.7%</span></td>
+      <td><span class="ma-pass">✓</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>可口可乐</td>
+      <td class="num">13</td>
+      <td class="num"><strong>11.6</strong></td>
+      <td class="num">8.1</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-1.4%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="">
+      <td class="sym-cell"><span class="sig-dot hold"></span>谷歌</td>
+      <td class="num">14</td>
+      <td class="num"><strong>11.2</strong></td>
+      <td class="num">7.2</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-6.4%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">—</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>苹果</td>
+      <td class="num">15</td>
+      <td class="num"><strong>11.2</strong></td>
+      <td class="num">8</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-2.1%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>CrowdStrike</td>
+      <td class="num">16</td>
+      <td class="num"><strong>10</strong></td>
+      <td class="num">7.2</td>
+      <td class="num">0</td>
+      <td class="num"><span class="ret-pos">+5.1%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>博通</td>
+      <td class="num">17</td>
+      <td class="num"><strong>8.4</strong></td>
+      <td class="num">6.6</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-6%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>英伟达</td>
+      <td class="num">18</td>
+      <td class="num"><strong>8.3</strong></td>
+      <td class="num">4.6</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-8.3%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>特斯拉</td>
+      <td class="num">19</td>
+      <td class="num"><strong>8.1</strong></td>
+      <td class="num">5.6</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-5%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>IBM</td>
+      <td class="num">20</td>
+      <td class="num"><strong>7.9</strong></td>
+      <td class="num">5</td>
+      <td class="num">0</td>
+      <td class="num"><span class="ret-pos">+16.6%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>Meta</td>
+      <td class="num">21</td>
+      <td class="num"><strong>6.7</strong></td>
+      <td class="num">4.4</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-6.1%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>亚马逊</td>
+      <td class="num">22</td>
+      <td class="num"><strong>6.5</strong></td>
+      <td class="num">3</td>
+      <td class="num">-3</td>
+      <td class="num"><span class="ret-neg">-10.4%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>Palantir</td>
+      <td class="num">23</td>
+      <td class="num"><strong>5.2</strong></td>
+      <td class="num">5</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-4.8%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>甲骨文</td>
+      <td class="num">24</td>
+      <td class="num"><strong>3.1</strong></td>
+      <td class="num">3.9</td>
+      <td class="num">-1</td>
+      <td class="num"><span class="ret-neg">-2.5%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr><tr class="sell-row">
+      <td class="sym-cell"><span class="sig-dot sell"></span>火箭实验室</td>
+      <td class="num">25</td>
+      <td class="num"><strong>0</strong></td>
+      <td class="num">0.8</td>
+      <td class="num">-3</td>
+      <td class="num"><span class="ret-neg">-19.6%</span></td>
+      <td><span class="ma-fail">✗</span></td>
+      <td style="font-weight:600">卖出</td>
+    </tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  EMTS · Equator Momentum Trading System · MomentumV3 引擎<br>
+  <span style="font-size:10px;color:var(--text-muted);margin-top:4px;display:inline-block">
+    ⚠️ 以上内容由 AI 生成，仅供参考，不构成投资建议
+  </span>
+</footer>
+
+<script>
+function toggleTheme(){
+  document.documentElement.classList.toggle('light');
+  const btn=document.getElementById('themeToggle');
+  const isLight=document.documentElement.classList.contains('light');
+  btn.textContent=isLight?'☾':'☀';
+  localStorage.setItem('equator-theme',isLight?'light':'dark');
+}
+(function(){
+  if(localStorage.getItem('equator-theme')==='light'){
+    document.documentElement.classList.add('light');
+    document.getElementById('themeToggle').textContent='☾';
+  }
+})();
+
+let EMBEDDED_SIGNALS = {
+  "generated_at": "2026-06-24T20:55:55.746972+08:00",
+  "scanner": "赤道 v5 纯动量",
+  "engine": "MomentumV3",
+  "universe": 50,
+  "params": {
+    "top_n": 7,
+    "sell_rank": 14
+  },
+  "mean": 11.9,
+  "median": 12.3,
+  "max": 21.7,
+  "min": 0,
+  "top5_mean": 21.2,
+  "buy_count": 7,
+  "sell_count": 36,
+  "filter": {
+    "active": false,
+    "residual_rule": "Top7 中位 20d 收益 ≤ 0 → 禁买",
+    "tsmom_rule": "个股 20d 收益 ≤ 0 → 拦截该只",
+    "tsmom_skip_count": 0
+  },
+  "rankings": [
+    {
+      "symbol": "AMAT",
+      "name": "应用材料",
+      "price": 585.88,
+      "momentum_score": 21.7,
+      "multi_horizon": 16.5,
+      "tsm_gate": 3,
+      "ret_20d_pct": 48.1,
+      "above_ma20": true,
+      "rank": 1,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "NBIS",
+      "name": "Nebius",
+      "price": 275.25,
+      "momentum_score": 21.3,
+      "multi_horizon": 15.8,
+      "tsm_gate": 3,
+      "ret_20d_pct": 32.1,
+      "above_ma20": true,
+      "rank": 2,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "WDC",
+      "name": "西部数据",
+      "price": 670.75,
+      "momentum_score": 21.2,
+      "multi_horizon": 17.5,
+      "tsm_gate": 3,
+      "ret_20d_pct": 51.3,
+      "above_ma20": true,
+      "rank": 3,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "INTC",
+      "name": "英特尔",
+      "price": 132.28,
+      "momentum_score": 21.0,
+      "multi_horizon": 15.4,
+      "tsm_gate": 3,
+      "ret_20d_pct": 17.6,
+      "above_ma20": true,
+      "rank": 4,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "KLAC",
+      "name": "科磊",
+      "price": 244.49,
+      "momentum_score": 20.8,
+      "multi_horizon": 15.2,
+      "tsm_gate": 3,
+      "ret_20d_pct": 42.5,
+      "above_ma20": true,
+      "rank": 5,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "LRCX",
+      "name": "拉姆研究",
+      "price": 371.33,
+      "momentum_score": 20.6,
+      "multi_horizon": 14.9,
+      "tsm_gate": 3,
+      "ret_20d_pct": 34.2,
+      "above_ma20": true,
+      "rank": 6,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "TER",
+      "name": "泰瑞达",
+      "price": 420.12,
+      "momentum_score": 20.3,
+      "multi_horizon": 14.5,
+      "tsm_gate": 3,
+      "ret_20d_pct": 27.5,
+      "above_ma20": true,
+      "rank": 7,
+      "action": "BUY_CANDIDATE"
+    },
+    {
+      "symbol": "MU",
+      "name": "美光",
+      "price": 1051.77,
+      "momentum_score": 20.0,
+      "multi_horizon": 16.9,
+      "tsm_gate": 3,
+      "ret_20d_pct": 61.3,
+      "above_ma20": true,
+      "rank": 8,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "VST",
+      "name": "Vistra",
+      "price": 162.39,
+      "momentum_score": 20.0,
+      "multi_horizon": 13.1,
+      "tsm_gate": 3,
+      "ret_20d_pct": 7.2,
+      "above_ma20": true,
+      "rank": 9,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "SNDK",
+      "name": "闪迪",
+      "price": 1963.6,
+      "momentum_score": 20.0,
+      "multi_horizon": 16.7,
+      "tsm_gate": 3,
+      "ret_20d_pct": 53.8,
+      "above_ma20": true,
+      "rank": 10,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "DELL",
+      "name": "戴尔",
+      "price": 427.78,
+      "momentum_score": 19.6,
+      "multi_horizon": 12.0,
+      "tsm_gate": 3,
+      "ret_20d_pct": 41.8,
+      "above_ma20": true,
+      "rank": 11,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "PANW",
+      "name": "PaloAlto",
+      "price": 290.92,
+      "momentum_score": 19.5,
+      "multi_horizon": 10.3,
+      "tsm_gate": 3,
+      "ret_20d_pct": 9.9,
+      "above_ma20": true,
+      "rank": 12,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "TSM",
+      "name": "台积电",
+      "price": 436.39,
+      "momentum_score": 19.3,
+      "multi_horizon": 12.8,
+      "tsm_gate": 3,
+      "ret_20d_pct": 15.9,
+      "above_ma20": true,
+      "rank": 13,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "ASML",
+      "name": "阿斯麦",
+      "price": 1778.46,
+      "momentum_score": 19.0,
+      "multi_horizon": 12.5,
+      "tsm_gate": 3,
+      "ret_20d_pct": 18.1,
+      "above_ma20": true,
+      "rank": 14,
+      "action": "HOLD"
+    },
+    {
+      "symbol": "AMD",
+      "name": "AMD",
+      "price": 519.85,
+      "momentum_score": 19.0,
+      "multi_horizon": 12.6,
+      "tsm_gate": 3,
+      "ret_20d_pct": 18.0,
+      "above_ma20": true,
+      "rank": 15,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "GLW",
+      "name": "康宁",
+      "price": 194.07,
+      "momentum_score": 18.2,
+      "multi_horizon": 13.4,
+      "tsm_gate": 2,
+      "ret_20d_pct": 8.3,
+      "above_ma20": true,
+      "rank": 16,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "VRT",
+      "name": "维谛",
+      "price": 318.32,
+      "momentum_score": 16.9,
+      "multi_horizon": 14.3,
+      "tsm_gate": 1,
+      "ret_20d_pct": 9.3,
+      "above_ma20": true,
+      "rank": 17,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ANET",
+      "name": "Arista",
+      "price": 162.2,
+      "momentum_score": 16.8,
+      "multi_horizon": 12.3,
+      "tsm_gate": 0,
+      "ret_20d_pct": 13.3,
+      "above_ma20": false,
+      "rank": 18,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "MRVL",
+      "name": "迈威尔",
+      "price": 279.04,
+      "momentum_score": 16.7,
+      "multi_horizon": 12.1,
+      "tsm_gate": 3,
+      "ret_20d_pct": 56.8,
+      "above_ma20": true,
+      "rank": 19,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ETN",
+      "name": "Eaton",
+      "price": 405.28,
+      "momentum_score": 16.6,
+      "multi_horizon": 12.0,
+      "tsm_gate": 0,
+      "ret_20d_pct": 11.4,
+      "above_ma20": false,
+      "rank": 20,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ADI",
+      "name": "ADI",
+      "price": 407.26,
+      "momentum_score": 15.2,
+      "multi_horizon": 11.9,
+      "tsm_gate": 0,
+      "ret_20d_pct": 12.5,
+      "above_ma20": false,
+      "rank": 21,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ON",
+      "name": "安森美",
+      "price": 117.06,
+      "momentum_score": 15.2,
+      "multi_horizon": 11.8,
+      "tsm_gate": 0,
+      "ret_20d_pct": 13.2,
+      "above_ma20": false,
+      "rank": 22,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ARM",
+      "name": "ARM",
+      "price": 366.39,
+      "momentum_score": 14.4,
+      "multi_horizon": 12.7,
+      "tsm_gate": 0,
+      "ret_20d_pct": 33.0,
+      "above_ma20": false,
+      "rank": 23,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "CRWV",
+      "name": "CoreWeave",
+      "price": 105.72,
+      "momentum_score": 12.4,
+      "multi_horizon": 10.7,
+      "tsm_gate": 0,
+      "ret_20d_pct": 5.5,
+      "above_ma20": false,
+      "rank": 24,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "CEG",
+      "name": "Constellation",
+      "price": 270.26,
+      "momentum_score": 12.3,
+      "multi_horizon": 9.9,
+      "tsm_gate": 1,
+      "ret_20d_pct": -6.3,
+      "above_ma20": true,
+      "rank": 25,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "CRWD",
+      "name": "CrowdStrike",
+      "price": 680.92,
+      "momentum_score": 12.0,
+      "multi_horizon": 8.2,
+      "tsm_gate": 0,
+      "ret_20d_pct": 1.8,
+      "above_ma20": false,
+      "rank": 26,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "CDNS",
+      "name": "Cadence",
+      "price": 379.06,
+      "momentum_score": 11.5,
+      "multi_horizon": 7.6,
+      "tsm_gate": 0,
+      "ret_20d_pct": 4.1,
+      "above_ma20": false,
+      "rank": 27,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "AAPL",
+      "name": "苹果",
+      "price": 294.3,
+      "momentum_score": 9.6,
+      "multi_horizon": 7.0,
+      "tsm_gate": -1,
+      "ret_20d_pct": -3.8,
+      "above_ma20": false,
+      "rank": 28,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "NET",
+      "name": "Cloudflare",
+      "price": 224.94,
+      "momentum_score": 8.8,
+      "multi_horizon": 4.1,
+      "tsm_gate": 0,
+      "ret_20d_pct": 1.0,
+      "above_ma20": false,
+      "rank": 29,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "IBM",
+      "name": "IBM",
+      "price": 264.94,
+      "momentum_score": 8.5,
+      "multi_horizon": 4.7,
+      "tsm_gate": 0,
+      "ret_20d_pct": -0.6,
+      "above_ma20": false,
+      "rank": 30,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "NVDA",
+      "name": "英伟达",
+      "price": 200.04,
+      "momentum_score": 7.7,
+      "multi_horizon": 7.5,
+      "tsm_gate": -1,
+      "ret_20d_pct": -3.0,
+      "above_ma20": false,
+      "rank": 31,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "TSLA",
+      "name": "特斯拉",
+      "price": 381.61,
+      "momentum_score": 7.3,
+      "multi_horizon": 6.8,
+      "tsm_gate": -1,
+      "ret_20d_pct": -4.9,
+      "above_ma20": false,
+      "rank": 32,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "QCOM",
+      "name": "高通",
+      "price": 204.13,
+      "momentum_score": 7.3,
+      "multi_horizon": 7.5,
+      "tsm_gate": 0,
+      "ret_20d_pct": -6.5,
+      "above_ma20": false,
+      "rank": 33,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "META",
+      "name": "Meta",
+      "price": 562.2,
+      "momentum_score": 6.5,
+      "multi_horizon": 4.5,
+      "tsm_gate": -1,
+      "ret_20d_pct": -7.5,
+      "above_ma20": false,
+      "rank": 34,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "GOOGL",
+      "name": "谷歌",
+      "price": 346.13,
+      "momentum_score": 6.4,
+      "multi_horizon": 3.7,
+      "tsm_gate": -1,
+      "ret_20d_pct": -8.6,
+      "above_ma20": false,
+      "rank": 35,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "AVGO",
+      "name": "博通",
+      "price": 380.15,
+      "momentum_score": 6.0,
+      "multi_horizon": 7.0,
+      "tsm_gate": -1,
+      "ret_20d_pct": -5.2,
+      "above_ma20": false,
+      "rank": 36,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ISRG",
+      "name": "直觉外科",
+      "price": 403.18,
+      "momentum_score": 5.8,
+      "multi_horizon": 4.5,
+      "tsm_gate": -3,
+      "ret_20d_pct": -8.0,
+      "above_ma20": false,
+      "rank": 37,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "AMZN",
+      "name": "亚马逊",
+      "price": 234.11,
+      "momentum_score": 5.4,
+      "multi_horizon": 3.0,
+      "tsm_gate": -3,
+      "ret_20d_pct": -12.6,
+      "above_ma20": false,
+      "rank": 38,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "IONQ",
+      "name": "IonQ",
+      "price": 57.85,
+      "momentum_score": 5.3,
+      "multi_horizon": 3.7,
+      "tsm_gate": 0,
+      "ret_20d_pct": -8.4,
+      "above_ma20": false,
+      "rank": 39,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "NOK",
+      "name": "诺基亚",
+      "price": 13.7,
+      "momentum_score": 5.0,
+      "multi_horizon": 5.6,
+      "tsm_gate": -1,
+      "ret_20d_pct": -6.7,
+      "above_ma20": false,
+      "rank": 40,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "LITE",
+      "name": "Lumentum",
+      "price": 827.92,
+      "momentum_score": 4.9,
+      "multi_horizon": 5.5,
+      "tsm_gate": -1,
+      "ret_20d_pct": -5.6,
+      "above_ma20": false,
+      "rank": 41,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "MPWR",
+      "name": "MPS",
+      "price": 1423.76,
+      "momentum_score": 4.9,
+      "multi_horizon": 5.4,
+      "tsm_gate": -1,
+      "ret_20d_pct": -3.3,
+      "above_ma20": false,
+      "rank": 42,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "MSFT",
+      "name": "微软",
+      "price": 373.94,
+      "momentum_score": 4.8,
+      "multi_horizon": 2.1,
+      "tsm_gate": -3,
+      "ret_20d_pct": -12.2,
+      "above_ma20": false,
+      "rank": 43,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "RGTI",
+      "name": "Rigetti",
+      "price": 21.28,
+      "momentum_score": 4.6,
+      "multi_horizon": 3.3,
+      "tsm_gate": 0,
+      "ret_20d_pct": -19.1,
+      "above_ma20": false,
+      "rank": 44,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "PLTR",
+      "name": "Palantir",
+      "price": 116.7,
+      "momentum_score": 1.7,
+      "multi_horizon": 1.1,
+      "tsm_gate": -1,
+      "ret_20d_pct": -12.7,
+      "above_ma20": false,
+      "rank": 45,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ORCL",
+      "name": "甲骨文",
+      "price": 165.16,
+      "momentum_score": 1.2,
+      "multi_horizon": 1.5,
+      "tsm_gate": -1,
+      "ret_20d_pct": -8.9,
+      "above_ma20": false,
+      "rank": 46,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "SPCX",
+      "name": "SpaceX",
+      "price": 156.11,
+      "momentum_score": 0.6,
+      "multi_horizon": 3.5,
+      "tsm_gate": -3,
+      "ret_20d_pct": -3.9,
+      "above_ma20": false,
+      "rank": 47,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "RKLB",
+      "name": "火箭实验室",
+      "price": 95.12,
+      "momentum_score": 0,
+      "multi_horizon": 1.3,
+      "tsm_gate": -3,
+      "ret_20d_pct": -26.1,
+      "above_ma20": false,
+      "rank": 48,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "AXTI",
+      "name": "AXT",
+      "price": 77.91,
+      "momentum_score": 0,
+      "multi_horizon": 2.9,
+      "tsm_gate": -3,
+      "ret_20d_pct": -34.4,
+      "above_ma20": false,
+      "rank": 49,
+      "action": "SELL_CANDIDATE"
+    },
+    {
+      "symbol": "ASTS",
+      "name": "AST太空移动",
+      "price": 72.87,
+      "momentum_score": 0,
+      "multi_horizon": 0.3,
+      "tsm_gate": -3,
+      "ret_20d_pct": -30.9,
+      "above_ma20": false,
+      "rank": 50,
+      "action": "SELL_CANDIDATE"
+    }
+  ],
+  "alerts_only": true
+};
+let EMBEDDED_PORTFOLIO = {"account": {"cash": 1427.0, "equity": 99193.0, "buying_power": 242677.0, "status": "ACTIVE"}, "positions": [{"symbol": "AMAT", "qty": 24, "entry_price": 583.97, "current_price": 586.3, "market_value": 14071.0, "pnl_pct": 0.4}, {"symbol": "INTC", "qty": 107, "entry_price": 134.89, "current_price": 134.58, "market_value": 14400.0, "pnl_pct": -0.2}, {"symbol": "KLAC", "qty": 58, "entry_price": 243.09, "current_price": 240.78, "market_value": 13965.0, "pnl_pct": -1.0}, {"symbol": "LRCX", "qty": 38, "entry_price": 368.59, "current_price": 369.32, "market_value": 14034.0, "pnl_pct": 0.2}, {"symbol": "NBIS", "qty": 51, "entry_price": 271.82, "current_price": 257.53, "market_value": 13134.0, "pnl_pct": -5.3}, {"symbol": "TER", "qty": 34, "entry_price": 425.84, "current_price": 426.13, "market_value": 14488.0, "pnl_pct": 0.1}, {"symbol": "WDC", "qty": 21, "entry_price": 651.28, "current_price": 651.05, "market_value": 13672.0, "pnl_pct": -0.0}], "fetched_at": "2026-06-24T23:18:34.054848+08:00", "equity_pnl": {"start": 100000.0, "current": 100000.0}};
+let EMBEDDED_EQUITY = [{"date": "06-23", "value": 100000.0}, {"date": "06-24", "value": 100000.0}];
+let EMBEDDED_ORDERS = [{"symbol": "AMAT", "side": "buy", "qty": "24", "status": "filled", "filled_at": "2026-06-24T13:30", "id": "a7b42899"}, {"symbol": "KLAC", "side": "buy", "qty": "58", "status": "filled", "filled_at": "2026-06-24T13:34", "id": "93e2198e"}, {"symbol": "INTC", "side": "buy", "qty": "107", "status": "filled", "filled_at": "2026-06-24T13:33", "id": "8bafcb31"}, {"symbol": "LRCX", "side": "buy", "qty": "38", "status": "filled", "filled_at": "2026-06-24T13:30", "id": "88a43df1"}, {"symbol": "TER", "side": "buy", "qty": "34", "status": "filled", "filled_at": "2026-06-24T13:32", "id": "4616c5b1"}, {"symbol": "NBIS", "side": "buy", "qty": "51", "status": "filled", "filled_at": "2026-06-24T13:33", "id": "340ad0ac"}, {"symbol": "WDC", "side": "buy", "qty": "21", "status": "filled", "filled_at": "2026-06-24T13:31", "id": "ebd3664a"}];
+let EMBEDDED_BENCHMARK = [{"date": "06-23", "value": 100000.0}, {"date": "06-24", "value": 100541.0}];
+let EMBEDDED_CLOCK = {"is_open": true, "next_open": "2026-06-25T09:30", "next_close": "2026-06-24T16:00"};
+let EMBEDDED_HISTORY = [{"date": "2026-06-23", "scores": {"NBIS": 24.9, "INTC": 22.2, "AMAT": 21.7, "VST": 21.2, "WDC": 21.2, "KLAC": 20.8, "MU": 20.6, "LRCX": 20.6, "SNDK": 20.6, "TER": 20.3, "TSM": 20.0, "ETN": 19.9, "VRT": 19.5, "PANW": 19.5, "ASML": 19.0, "AMD": 19.0, "ANET": 18.9, "ADI": 17.9, "DELL": 17.8, "MRVL": 17.3, "GLW": 16.9, "ARM": 16.5, "ON": 15.8, "CRWV": 15.7, "CEG": 12.6, "CRWD": 12.0, "CDNS": 11.4, "AAPL": 11.1, "IBM": 8.5, "NVDA": 8.3, "TSLA": 7.9, "NET": 7.9, "GOOGL": 7.3, "QCOM": 7.3, "META": 7.1, "AVGO": 6.6, "IONQ": 6.2, "RGTI": 6.1, "MPWR": 5.8, "ISRG": 5.8, "AMZN": 5.4, "LITE": 5.2, "NOK": 5.0, "MSFT": 4.8, "PLTR": 2.6, "ORCL": 1.9, "SPCX": 0.6, "RKLB": 0, "AXTI": 0, "ASTS": 0}}, {"date": "2026-06-24", "scores": {"AMAT": 21.7, "NBIS": 21.3, "WDC": 21.2, "INTC": 21.0, "KLAC": 20.8, "LRCX": 20.6, "TER": 20.3, "MU": 20.0, "VST": 20.0, "SNDK": 20.0, "DELL": 19.6, "PANW": 19.5, "TSM": 19.3, "ASML": 19.0, "AMD": 19.0, "GLW": 18.2, "VRT": 16.9, "ANET": 16.8, "MRVL": 16.7, "ETN": 16.6, "ADI": 15.2, "ON": 15.2, "ARM": 14.4, "CRWV": 12.4, "CEG": 12.3, "CRWD": 12.0, "CDNS": 11.5, "AAPL": 9.6, "NET": 8.8, "IBM": 8.5, "NVDA": 7.7, "TSLA": 7.3, "QCOM": 7.3, "META": 6.5, "GOOGL": 6.4, "AVGO": 6.0, "ISRG": 5.8, "AMZN": 5.4, "IONQ": 5.3, "NOK": 5.0, "LITE": 4.9, "MPWR": 4.9, "MSFT": 4.8, "RGTI": 4.6, "PLTR": 1.7, "ORCL": 1.2, "SPCX": 0.6, "RKLB": 0, "AXTI": 0, "ASTS": 0}}, {"date": "2026-06-24", "scores": {"AMAT": 21.7, "NBIS": 21.3, "WDC": 21.2, "INTC": 21.0, "KLAC": 20.8, "LRCX": 20.6, "TER": 20.3, "MU": 20.0, "VST": 20.0, "SNDK": 20.0, "DELL": 19.6, "PANW": 19.5, "TSM": 19.3, "ASML": 19.0, "AMD": 19.0, "GLW": 18.2, "VRT": 16.9, "ANET": 16.8, "MRVL": 16.7, "ETN": 16.6, "ADI": 15.2, "ON": 15.2, "ARM": 14.4, "CRWV": 12.4, "CEG": 12.3, "CRWD": 12.0, "CDNS": 11.5, "AAPL": 9.6, "NET": 8.8, "IBM": 8.5, "NVDA": 7.7, "TSLA": 7.3, "QCOM": 7.3, "META": 6.5, "GOOGL": 6.4, "AVGO": 6.0, "ISRG": 5.8, "AMZN": 5.4, "IONQ": 5.3, "NOK": 5.0, "LITE": 4.9, "MPWR": 4.9, "MSFT": 4.8, "RGTI": 4.6, "PLTR": 1.7, "ORCL": 1.2, "SPCX": 0.6, "RKLB": 0, "AXTI": 0, "ASTS": 0}}];
+
+function render(data){
+  const s = data, rankings = data.rankings;
+  const maxScore = Math.max(...rankings.map(r=>r.momentum_score),1);
+
+  // Date + freshness
+  document.getElementById('updateDate').textContent = data.generated_at?.slice(0,10) || '--';
+  const el = document.getElementById('freshness');
+  if(data.generated_at){
+    const age = (Date.now() - new Date(data.generated_at).getTime()) / 3600000;
+    if(age < 8){ el.style.background='var(--teal-dim)';el.style.color='var(--teal)';el.textContent='● 新鲜'; }
+    else if(age < 24){ el.style.background='var(--amber-glow)';el.style.color='var(--amber)';el.textContent='○ ' + age.toFixed(0) + 'h前'; }
+    else { el.style.background='var(--vermilion-dim)';el.style.color='var(--vermilion)';el.textContent='● ' + age.toFixed(0) + 'h前'; }
+  }
+
+  // Stats
+  document.getElementById('statMean').textContent = s.mean?.toFixed(1)||'--';
+  document.getElementById('statMedian').textContent = s.median?.toFixed(1)||'--';
+  document.getElementById('statTop5').textContent = s.top5_mean?.toFixed(1)||'--';
+  document.getElementById('statLead').textContent = s.top5_mean&&s.mean ? '+'+(s.top5_mean-s.mean).toFixed(1) : '--';
+  document.getElementById('statBuy').textContent = s.buy_count||0;
+  document.getElementById('statSell').textContent = s.sell_count||0;
+
+  // Heatmap
+  document.getElementById('heatmap').innerHTML = rankings.map((r,i)=>{
+    const cls = r.action==='BUY_CANDIDATE'?'buy':r.action==='SELL_CANDIDATE'?'sell':'hold';
+    const pct = (r.momentum_score/maxScore*100);
+    const sym = r.symbol.length>4 ? r.symbol.slice(0,4) : r.symbol;
+    return `<div class="heat-cell ${cls}" style="opacity:${.4+pct/167}" title="${r.name} #${r.rank} · ${r.momentum_score}分">
+      <span class="sym">${sym}</span>
+    </div>`;
+  }).join('');
+
+  // Leaderboard
+  document.getElementById('leaderboard').innerHTML = rankings.slice(0,10).map(r=>{
+    const cls = r.action==='BUY_CANDIDATE'?'buy':'';
+    const tag = r.action==='BUY_CANDIDATE'?'<span class="tag tag-buy">买</span>':'';
+    const d20 = r.ret_20d_pct;
+    const dCls = d20>0?'pos':'neg';
+    return `<div class="leader-card ${cls}">
+      <div class="rank">#${r.rank}</div>
+      ${tag}
+      <div class="name">${r.name}</div>
+      <div class="score-row">
+        <span class="score">${r.momentum_score}</span>
+        <span class="delta ${dCls}">${d20>0?'+':''}${d20}%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Table
+  document.getElementById('rankTable').innerHTML = rankings.map(r=>{
+    const rowCls = r.action==='BUY_CANDIDATE'?'buy-row':r.action==='SELL_CANDIDATE'?'sell-row':'';
+    const dot = r.action==='BUY_CANDIDATE'?'buy':r.action==='SELL_CANDIDATE'?'sell':'hold';
+    const ma = r.above_ma20 ? '<span class="ma-pass">✓</span>' : '<span class="ma-fail">✗</span>';
+    const d20 = r.ret_20d_pct;
+    const ret = d20>0 ? `<span class="ret-pos">+${d20}%</span>` : `<span class="ret-neg">${d20}%</span>`;
+    const sig = r.action==='BUY_CANDIDATE'?'买入':r.action==='SELL_CANDIDATE'?'卖出':'—';
+    return `<tr class="${rowCls}" data-sym="${r.symbol}">
+      <td class="sym-cell"><span class="sig-dot ${dot}"></span>${r.name}</td>
+      <td class="num">${r.rank}</td>
+      <td class="num"><strong>${r.momentum_score}</strong></td>
+      <td class="num">${r.multi_horizon}</td>
+      <td class="num">${r.tsm_gate}</td>
+      <td class="num">${ret}</td>
+      <td>${ma}</td>
+      <td style="font-weight:600">${sig}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPortfolio(portfolio, rankings){
+  if(!portfolio || portfolio.error){
+    document.getElementById('portfolioSection').style.display = 'none';
+    return;
+  }
+  const acct = portfolio.account;
+  if(!acct){ return; }
+
+  document.getElementById('portfolioSection').style.display = 'block';
+  document.getElementById('portCash').textContent = '$' + acct.cash.toLocaleString();
+  document.getElementById('portEquity').textContent = '$' + acct.equity.toLocaleString();
+
+  // 构建信号排名查找表
+  const rankMap = {};
+  if(rankings){
+    rankings.forEach(r => { rankMap[r.symbol] = r; });
+  }
+
+  const tbl = document.getElementById('portfolioTable');
+  tbl.innerHTML = portfolio.positions.map(p => {
+    const pnlCls = p.pnl_pct >= 0 ? 'ret-pos' : 'ret-neg';
+    const sig = rankMap[p.symbol];
+    let matchHtml = '—';
+    if(sig){
+      const dot = sig.action==='BUY_CANDIDATE'?'buy':sig.action==='SELL_CANDIDATE'?'sell':'hold';
+      const label = sig.action==='BUY_CANDIDATE'?'买入':sig.action==='SELL_CANDIDATE'?'卖出':'持有';
+      matchHtml = `<span class="sig-dot ${dot}"></span>${label} (#${sig.rank})`;
+    }
+    return `<tr>
+      <td class="sym-cell">${p.symbol}</td>
+      <td class="num">${p.qty}</td>
+      <td class="num mono">${p.entry_price.toFixed(2)}</td>
+      <td class="num mono">${p.current_price.toFixed(2)}</td>
+      <td class="num mono">$${p.market_value.toLocaleString()}</td>
+      <td class="num"><span class="${pnlCls}">${p.pnl_pct>0?'+':''}${p.pnl_pct}%</span></td>
+      <td>${matchHtml}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:20px">暂无持仓</td></tr>';
+}
+
+async function init(){
+  let data;
+  if(EMBEDDED_SIGNALS && EMBEDDED_SIGNALS.rankings){
+    data = EMBEDDED_SIGNALS;
+  }else{
+    try{
+      const r = await fetch('./signals_momentum.json');
+      data = await r.json();
+    }catch(e){
+      document.querySelector('main').innerHTML =
+        '<div style="text-align:center;padding:80px 20px;color:var(--text-dim)">'
+        +'<div style="font-size:48px;margin-bottom:16px">⚡</div>'
+        +'数据加载中…<br><small style="color:var(--text-muted)">请稍后刷新</small></div>';
+      return;
+    }
+  }
+  render(data);
+  renderPortfolio(EMBEDDED_PORTFOLIO, data.rankings);
+  if(EMBEDDED_EQUITY) renderEquity(EMBEDDED_EQUITY, EMBEDDED_BENCHMARK);
+  if(EMBEDDED_ORDERS) renderOrders(EMBEDDED_ORDERS, data.generated_at);
+  renderClock(typeof EMBEDDED_CLOCK !== 'undefined' ? EMBEDDED_CLOCK : null);
+}
+
+function renderClock(c){
+  if(!c) return;
+  const el=document.getElementById('marketClock');
+  if(c.is_open){
+    el.style.background='var(--teal-dim)';el.style.color='var(--teal)';el.textContent='● 开盘';
+  }else{
+    el.style.background='var(--vermilion-dim)';el.style.color='var(--vermilion)';el.textContent='○ 休市';
+  }
+}
+
+function renderOrders(orders, signalTs){
+  if(!orders||!orders.length) return;
+  document.getElementById('orderSection').style.display='block';
+  document.getElementById('orderCount').textContent = orders.length+' 笔';
+  var timingEl = document.getElementById('orderTiming');
+  if(timingEl && signalTs){
+    var sigD = new Date(signalTs);
+    var ordD = orders[0] && orders[0].submitted_at ? new Date(orders[0].submitted_at) : null;
+    var note = '信号 '+sigD.toISOString().slice(0,16).replace('T',' ');
+    if(ordD && Math.abs(sigD-ordD)>3600000){
+      note += ' | 订单 '+ordD.toISOString().slice(0,16).replace('T',' ')+' ⚠️时间差';
+    }
+    timingEl.textContent = note;
+  }
+  document.getElementById('orderTable').innerHTML = orders.map(o=>{
+    const sideCls = o.side==='buy'?'ret-pos':'ret-neg';
+    const sideLabel = o.side==='buy'?'🟢 买入':'🔴 卖出';
+    const statusLabel = o.status==='filled'?'✅ 已成交':o.status==='accepted'?'⏳ 排队':'—';
+    const filledT = o.filled_at || '—';
+    return '<tr><td class="sym-cell">'+o.symbol+'</td><td><span class="'+sideCls+'">'+sideLabel+'</span></td><td class="num">'+o.qty+'</td><td>'+statusLabel+'</td><td style="font-size:11px;color:var(--text-dim)">'+filledT+'</td></tr>';
+  }).join('');
+}
+
+function renderEquity(eq, bm){
+  if(!eq||!eq.length) return;
+  document.getElementById('equitySection').style.display='block';
+  const last = eq[eq.length-1], first=eq[0];
+  const retPct = first.value>0 ? ((last.value/first.value-1)*100).toFixed(1) : '--';
+  const bmLast = bm&&bm.length ? bm[bm.length-1].value : null;
+  const bmRetPct = bmLast && first.value>0 ? ((bmLast/first.value-1)*100).toFixed(1) : null;
+  document.getElementById('eqStart').textContent = '$'+first.value.toLocaleString();
+  document.getElementById('eqCurrent').innerHTML =
+    '$'+last.value.toLocaleString()+' <span style="color:'+(retPct>=0?'var(--vermilion)':'var(--teal)')+'">'+(retPct>=0?'+':'')+retPct+'%</span>';
+  if(bmRetPct){
+    document.getElementById('eqCurrent').innerHTML +=
+      ' <span style="font-size:10px;color:var(--text-dim)">vs 纳指'+(bmRetPct>=0?'+':'')+bmRetPct+'%</span>';
+  }
+
+  const svg=document.getElementById('equityChart');
+  const W=900,H=300,padL=50,padR=20,padT=20,padB=36;
+  const xs=eq.map((_,i)=>padL+(i/(eq.length-1))*(W-padL-padR));
+  const allVals=eq.map(p=>p.value);
+  if(bm&&bm.length) allVals.push(...bm.map(p=>p.value));
+  const minV=Math.min(...allVals)*.97, maxV=Math.max(...allVals)*1.03, range=maxV-minV||1;
+  const y=v=>padT+(1-(v-minV)/range)*(H-padT-padB);
+  const ys=allVals.slice(0,eq.length).map(y);
+  const linePts=xs.map((x,i)=>x+','+ys[i].toFixed(1)).join(' ');
+
+  // Benchmark line
+  let bmLine='', bmEndLabel='';
+  if(bm&&bm.length>=2){
+    const by=bm.map(p=>y(p.value));
+    const bmPts=xs.slice(0,bm.length).map((x,i)=>x+','+by[i].toFixed(1)).join(' ');
+    bmLine='<polyline points="'+bmPts+'" class="eq-benchmark"/>';
+    const blx=xs[bm.length-1], bly=by[by.length-1];
+    bmEndLabel='<text x="'+(blx+4)+'" y="'+(bly-4)+'" class="eq-label" fill="var(--text-dim)">纳指</text>';
+  }
+
+  // Grid — 5 horizontal lines + subtle baseline
+  let grid='',labels='';
+  for(let i=0;i<=4;i++){
+    const v=minV+(range*i/4), gy=y(v);
+    grid+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" class="eq-grid"/>';
+    labels+='<text x="'+(padL-6)+'" y="'+(gy+4).toFixed(1)+'" class="eq-label" text-anchor="end">$'+(v/1000).toFixed(0)+'k</text>';
+  }
+  // Baseline: dotted line at start value
+  if(first.value > minV){
+    const by=y(first.value);
+    grid+='<line x1="'+padL+'" y1="'+by.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+by.toFixed(1)+'" stroke="var(--line)" stroke-width=".5" stroke-dasharray="3 4"/>';
+  }
+
+  // Date labels
+  const step=Math.max(1,Math.floor(eq.length/5));
+  for(let i=0;i<eq.length;i+=step){
+    labels+='<text x="'+xs[i].toFixed(1)+'" y="'+(H-10)+'" class="eq-label" text-anchor="middle">'+eq[i].date+'</text>';
+  }
+  // End value marker
+  if(eq.length){
+    const lx=xs[xs.length-1], ly=ys[ys.length-1];
+    labels+='<text x="'+(lx+4)+'" y="'+(ly-6)+'" class="eq-label" fill="var(--amber)" font-weight="600">$'+(last.value/1000).toFixed(0)+'k</text>';
+    labels+=bmEndLabel;
+  }
+
+  svg.innerHTML=
+    '<defs>'+
+      '<linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0%" stop-color="var(--amber)" stop-opacity=".35"/>'+
+        '<stop offset="60%" stop-color="var(--amber)" stop-opacity=".06"/>'+
+        '<stop offset="100%" stop-color="var(--amber)" stop-opacity="0"/>'+
+      '</linearGradient>'+
+      '<linearGradient id="eqLineGrad" x1="0" y1="0" x2="1" y2="0">'+
+        '<stop offset="0%" stop-color="var(--amber-dim)"/>'+
+        '<stop offset="100%" stop-color="var(--amber)"/>'+
+      '</linearGradient>'+
+    '</defs>'+
+    grid+labels+bmLine+
+    '<polygon points="'+linePts+' '+(W-padR).toFixed(1)+','+(H-padB)+' '+padL+','+(H-padB)+'" class="eq-area"/>'+
+    '<polyline points="'+linePts+'" class="eq-line"/>';
+}
+init();
+// ── 趋势线点击 ──
+document.getElementById('rankTable').addEventListener('click', e => {
+  const tr = e.target.closest('tr');
+  if(!tr || !EMBEDDED_HISTORY) return;
+  const sym = tr.dataset.sym;
+  if(sym) showTrend(sym);
+});
+function showTrend(symbol){
+  if(!EMBEDDED_HISTORY || EMBEDDED_HISTORY.length<2) return;
+  const scores = EMBEDDED_HISTORY.map(d => d.scores?.[symbol]);
+  if(scores.every(s => s===undefined)) return;
+  const dates = EMBEDDED_HISTORY.map(d => d.date.slice(5));
+  const name = (EMBEDDED_SIGNALS?.rankings||[]).find(r=>r.symbol===symbol)?.name || symbol;
+  const m = document.createElement('div');
+  m.id='trendModal';
+  m.innerHTML = '<div class="trend-overlay" onclick="this.parentElement.remove()"></div>'
+    +'<div class="trend-card"><div class="trend-header"><span>'+name+' ('+symbol+')</span>'
+    +'<button onclick="document.getElementById(\'trendModal\').remove()">&times;</button></div>'
+    +buildTrendSVG(scores,dates)+'</div>';
+  document.body.appendChild(m);
+}
+function buildTrendSVG(scores,dates){
+  const W=380,H=240,padL=40,padR=20,padT=20,padB=30;
+  const ws=W-padL-padR, hs=H-padT-padB;
+  const min=0, max=30;
+  const valid = scores.map((s,i)=>s!==undefined?{v:s,i}:null).filter(x=>x);
+  if(valid.length<2) return '<div style="color:var(--text-dim);text-align:center;padding:40px">数据不足</div>';
+  const pts = valid.map(x => {
+    const cx = padL + (x.i/(scores.length-1))*ws;
+    const cy = padT + (1-(x.v-min)/(max-min))*hs;
+    return cx.toFixed(1)+','+cy.toFixed(1);
+  }).join(' ');
+  const dots = valid.map(x => {
+    const cx = padL + (x.i/(scores.length-1))*ws;
+    const cy = padT + (1-(x.v-min)/(max-min))*hs;
+    return '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3" fill="#f0a030"/>';
+  }).join('');
+  const labels = dates.filter((_,i)=> i%Math.max(1,Math.floor(dates.length/5))===0).map(d =>
+    '<text x="'+(padL+(dates.indexOf(d)/(dates.length-1))*ws).toFixed(0)+'" y="'+(H-4)+'" text-anchor="middle" fill="#64748b" font-size="10">'+d+'</text>'
+  ).join('');
+  const yTicks = [0,10,20,30].map(v => {
+    const y = padT + (1-v/max)*hs;
+    return '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(255,255,255,0.06)"/>'
+      +'<text x="'+(padL-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" fill="#64748b" font-size="10">'+v+'</text>';
+  }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:240px">'
+    +'<rect x="'+padL+'" y="'+padT+'" width="'+ws+'" height="'+hs+'" fill="rgba(240,160,48,0.04)" rx="4"/>'
+    +yTicks+labels+dots
+    +'<polyline points="'+pts+'" fill="none" stroke="#f0a030" stroke-width="2" stroke-linejoin="round"/>'
+    +'</svg>';
+}
+</script>
+
+
+</body></html>
